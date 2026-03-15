@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Вечеринка 🔥</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0a1a; --card:#161228; --card2:#1e1838;
+  --a1:#ff4da6; --a2:#a259ff; --a3:#ffde59;
+  --green:#4dffb4; --text:#f0eaff; --muted:#6d5f90;
+  --soft:#3ddc84; --mid:#ffb830; --hot:#ff3355;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);display:flex;flex-direction:column;}
+
+/* ── BLOBS ── */
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.10;pointer-events:none;animation:bd 14s ease-in-out infinite alternate;}
+.b1{width:460px;height:460px;background:var(--a1);top:-140px;left:-140px;animation-duration:11s;}
+.b2{width:380px;height:380px;background:var(--a2);bottom:-100px;right:-100px;animation-duration:15s;animation-delay:-5s;}
+.b3{width:280px;height:280px;background:var(--a3);top:45%;left:55%;animation-duration:9s;animation-delay:-3s;}
+@keyframes bd{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,28px) scale(1.1)}}
+
+/* ── SCREENS ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;z-index:1;}
+.screen.hidden{transform:translateX(100%);opacity:0;pointer-events:none;}
+#screen-main{z-index:2;}
+
+/* ── MAIN SCREEN ── */
+.main-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 16px 80px;max-width:640px;width:100%;margin:0 auto;}
+.main-scroll::-webkit-scrollbar{width:0;}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-top:calc(var(--safe-top) + 4px);}
+.game-title{font-family:'Dela Gothic One',cursive;font-size:clamp(1.6rem,7vw,2.6rem);background:linear-gradient(135deg,var(--a1),var(--a2),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.settings-btn{width:44px;height:44px;border-radius:14px;border:1.5px solid rgba(162,89,255,.25);background:var(--card2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;flex-shrink:0;transition:background .2s;}
+.settings-btn:hover{background:rgba(162,89,255,.15);}
+.round-info{font-size:.75rem;color:var(--muted);font-weight:700;letter-spacing:.4px;}
+
+/* mode tabs */
+.mode-tabs{display:flex;background:var(--card2);border-radius:14px;padding:3px;gap:3px;border:1.5px solid rgba(162,89,255,.15);margin-bottom:16px;}
+.mode-tab{flex:1;border:none;border-radius:10px;padding:10px 8px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:900;cursor:pointer;transition:all .22s;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;}
+.mode-tab.active{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;box-shadow:0 4px 16px rgba(255,77,166,.28);}
+
+/* players row */
+.players-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
+.players-scroll::-webkit-scrollbar{height:0;}
+.pchip{display:flex;align-items:center;gap:5px;background:var(--card2);border:1.5px solid rgba(162,89,255,.2);border-radius:50px;padding:7px 12px 7px 9px;font-size:.83rem;font-weight:700;color:var(--muted);transition:all .22s;white-space:nowrap;flex-shrink:0;}
+.pchip .gdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.pchip.m .gdot{background:#59aaff;} .pchip.f .gdot{background:var(--a1);}
+.pchip.act-a{border-color:var(--a1);color:var(--a1);background:rgba(255,77,166,.1);box-shadow:0 0 12px rgba(255,77,166,.2);transform:scale(1.06);}
+.pchip.act-b{border-color:var(--a2);color:var(--a2);background:rgba(162,89,255,.1);box-shadow:0 0 12px rgba(162,89,255,.2);transform:scale(1.06);}
+
+/* result card */
+.result-card{background:var(--card);border:1.5px solid rgba(162,89,255,.18);border-radius:24px;padding:28px 22px;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;transition:border-color .35s;margin-bottom:16px;}
+.result-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,77,166,.04),rgba(162,89,255,.04));pointer-events:none;}
+.result-card.cat-soft{border-color:rgba(61,220,132,.35);} .result-card.cat-mid{border-color:rgba(255,184,48,.35);} .result-card.cat-hot{border-color:rgba(255,51,85,.38);}
+
+.cat-badge{font-size:.66rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;border-radius:50px;padding:3px 11px;border:1.5px solid;opacity:0;transform:translateY(5px);transition:opacity .3s,transform .3s;}
+.cat-badge.vis{opacity:1;transform:translateY(0);}
+.cat-badge.soft{color:var(--soft);border-color:var(--soft);background:rgba(61,220,132,.08);}
+.cat-badge.mid{color:var(--mid);border-color:var(--mid);background:rgba(255,184,48,.08);}
+.cat-badge.hot{color:var(--hot);border-color:var(--hot);background:rgba(255,51,85,.08);}
+
+/* THE dare text — names inline, big and readable */
+.dare-main{font-size:clamp(1.05rem,4vw,1.35rem);font-weight:700;line-height:1.65;color:var(--text);opacity:0;transform:translateY(8px);transition:opacity .35s .1s,transform .35s .1s;max-width:480px;}
+.dare-main.vis{opacity:1;transform:translateY(0);}
+.dare-main .na{color:var(--a1);font-weight:900;}
+.dare-main .nb{color:var(--a2);font-weight:900;}
+.dare-main .part{color:var(--a3);font-weight:900;}
+
+.placeholder-txt{color:var(--muted);font-size:.95rem;font-weight:700;}
+
+/* timer ring */
+.timer-wrap{position:relative;width:56px;height:56px;display:none;}
+.timer-wrap.active{display:block;}
+.tring{transform:rotate(-90deg);}
+.tbg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:4;}
+.tarc{fill:none;stroke:var(--a3);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .95s linear;}
+.tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Dela Gothic One',cursive;font-size:1.05rem;color:var(--a3);}
+
+/* categories */
+.cats{display:flex;gap:8px;margin-bottom:16px;}
+.cat-btn{flex:1;border-radius:13px;border:2px solid transparent;padding:10px 6px;font-family:'Nunito',sans-serif;font-size:.79rem;font-weight:900;cursor:pointer;transition:all .2s;text-align:center;background:var(--card2);color:var(--muted);position:relative;overflow:hidden;}
+.cat-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;}
+.cat-btn.soft::before{background:rgba(61,220,132,.08);} .cat-btn.mid::before{background:rgba(255,184,48,.08);} .cat-btn.hot::before{background:rgba(255,51,85,.08);}
+.cat-btn.active.soft{border-color:var(--soft);color:var(--soft);} .cat-btn.active.mid{border-color:var(--mid);color:var(--mid);} .cat-btn.active.hot{border-color:var(--hot);color:var(--hot);}
+.cat-btn.active::before{opacity:1;}
+.cat-icon{font-size:1.2rem;display:block;margin-bottom:2px;}
+.cat-count{font-size:.65rem;opacity:.6;font-weight:700;margin-top:1px;}
+
+/* parts tags */
+.parts-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.part-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1.5px solid rgba(162,89,255,.18);border-radius:50px;padding:6px 11px 6px 8px;cursor:pointer;font-size:.82rem;font-weight:700;color:var(--muted);transition:all .18s;user-select:none;}
+.part-tag.on{border-color:var(--green);color:var(--green);background:rgba(77,255,180,.08);}
+.part-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .18s;flex-shrink:0;}
+.part-tag.on .dot{background:var(--green);}
+.part-tag .prm{margin-left:2px;font-size:.68rem;color:inherit;opacity:.35;transition:opacity .18s;}
+.part-tag:active .prm{opacity:1;}
+
+/* bottom buttons */
+.btn-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:8px;}
+.btn-main{background:linear-gradient(135deg,var(--a1),var(--a2));border:none;border-radius:50px;padding:16px 44px;font-family:'Dela Gothic One',cursive;font-size:clamp(.95rem,3vw,1.2rem);color:#fff;cursor:pointer;box-shadow:0 7px 28px rgba(255,77,166,.3);transition:transform .15s,box-shadow .15s;overflow:hidden;position:relative;}
+.btn-main::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.14),transparent);pointer-events:none;}
+.btn-main:active{transform:scale(.95);}
+.btn-main:disabled{opacity:.45;cursor:not-allowed;}
+.btn-main.spin-anim{animation:pulse .42s ease;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1)}}
+.btn-skip{background:rgba(255,255,255,.06);border:1.5px solid rgba(162,89,255,.2);border-radius:50px;padding:12px 20px;font-family:'Nunito',sans-serif;font-size:.86rem;font-weight:900;color:var(--muted);cursor:pointer;transition:all .2s;}
+.btn-skip:active{background:rgba(162,89,255,.12);color:var(--text);}
+
+.warn{font-size:.78rem;color:var(--hot);font-weight:700;text-align:center;min-height:16px;margin-bottom:4px;}
+
+/* add row */
+.add-row{display:flex;gap:7px;margin-top:8px;}
+.ai{flex:1;min-width:80px;background:rgba(255,255,255,.04);border:1.5px solid rgba(162,89,255,.18);border-radius:50px;padding:9px 15px;font-family:'Nunito',sans-serif;font-size:.84rem;font-weight:700;color:var(--text);outline:none;transition:border-color .2s;}
+.ai::placeholder{color:var(--muted);} .ai:focus{border-color:var(--a2);}
+.addbtn{background:linear-gradient(135deg,var(--a2),var(--a1));border:none;border-radius:50px;padding:9px 15px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:900;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .2s,transform .15s;}
+.addbtn:active{transform:scale(.95);}
+
+.sec-label{font-size:.68rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+/* ── SETTINGS SCREEN ── */
+#screen-settings{background:var(--bg);z-index:10;}
+.sett-scroll{flex:1;overflow-y:auto;padding:20px 16px 40px;max-width:640px;width:100%;margin:0 auto;}
+.sett-scroll::-webkit-scrollbar{width:0;}
+
+.sett-topbar{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-top:calc(var(--safe-top) + 4px);}
+.back-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid rgba(162,89,255,.25);background:var(--card2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .2s;}
+.back-btn:active{background:rgba(162,89,255,.15);}
+.sett-title{font-family:'Dela Gothic One',cursive;font-size:1.6rem;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+.sett-section{margin-bottom:22px;}
+.sett-section-title{font-size:.68rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;padding-left:4px;}
+
+.scard{background:var(--card);border:1.5px solid rgba(162,89,255,.14);border-radius:18px;overflow:hidden;}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(162,89,255,.08);}
+.srow:last-child{border-bottom:none;}
+.srow-lbl{font-size:.9rem;font-weight:700;color:var(--text);line-height:1.35;}
+.srow-sub{display:block;font-size:.72rem;color:var(--muted);font-weight:400;margin-top:2px;}
+.sw{position:relative;width:44px;height:24px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sw-sl{position:absolute;inset:0;background:rgba(162,89,255,.2);border-radius:50px;cursor:pointer;transition:background .3s;}
+.sw-sl::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:var(--muted);transition:transform .3s,background .3s;}
+.sw input:checked+.sw-sl{background:rgba(77,255,180,.28);}
+.sw input:checked+.sw-sl::before{transform:translateX(20px);background:var(--green);}
+
+/* pair type selector */
+.pair-types{display:flex;gap:8px;flex-wrap:wrap;}
+.pair-type-btn{flex:1;min-width:80px;border-radius:12px;border:2px solid rgba(162,89,255,.2);padding:10px 8px;text-align:center;background:var(--card2);font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:900;color:var(--muted);cursor:pointer;transition:all .2s;line-height:1.4;}
+.pair-type-btn.active{border-color:var(--green);color:var(--green);background:rgba(77,255,180,.08);}
+.pair-type-btn .pt-icon{font-size:1.2rem;display:block;margin-bottom:3px;}
+
+/* timer opts */
+.timer-opts-row{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px 14px;}
+.topt{border-radius:50px;border:1.5px solid rgba(162,89,255,.2);padding:7px 14px;background:transparent;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;}
+.topt.active{border-color:var(--a3);color:var(--a3);background:rgba(255,222,89,.08);}
+
+/* dare list */
+.dare-list-wrap{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;}
+.dare-list-wrap::-webkit-scrollbar{width:3px;}
+.dare-list-wrap::-webkit-scrollbar-thumb{background:rgba(162,89,255,.28);border-radius:3px;}
+.di{display:flex;align-items:flex-start;gap:8px;padding:8px 11px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(162,89,255,.08);}
+.di-cat{font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:50px;padding:2px 8px;border:1px solid;flex-shrink:0;margin-top:1px;}
+.di-cat.soft{color:var(--soft);border-color:var(--soft);} .di-cat.mid{color:var(--mid);border-color:var(--mid);} .di-cat.hot{color:var(--hot);border-color:var(--hot);}
+.di-text{flex:1;color:var(--text);font-size:.82rem;font-weight:700;line-height:1.4;}
+.di-rm{opacity:.28;cursor:pointer;font-size:.76rem;transition:opacity .2s;flex-shrink:0;padding-top:2px;}
+.di-rm:active{opacity:1;}
+.cat-sel{background:var(--card2);border:1.5px solid rgba(162,89,255,.2);border-radius:50px;padding:9px 12px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;color:var(--text);outline:none;cursor:pointer;flex-shrink:0;}
+.cat-sel option{background:var(--card2);}
+.sel-row{display:flex;gap:10px;}
+.sel-btn{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;text-decoration:underline;transition:color .2s;padding:0;}
+.sel-btn:active{color:var(--text);}
+
+/* history */
+.hist-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto;}
+.hist-list::-webkit-scrollbar{width:3px;}
+.hist-list::-webkit-scrollbar-thumb{background:rgba(162,89,255,.28);border-radius:3px;}
+.hi{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;background:rgba(255,255,255,.025);border-radius:10px;}
+.hi-r{font-size:.65rem;color:var(--muted);font-weight:900;flex-shrink:0;padding-top:2px;}
+.hi-t{flex:1;color:var(--text);font-size:.8rem;font-weight:700;line-height:1.35;}
+.hi-c{font-size:.62rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;padding-top:2px;}
+.hi-c.soft{color:var(--soft);} .hi-c.mid{color:var(--mid);} .hi-c.hot{color:var(--hot);} .hi-c.kiss{color:var(--a1);}
+
+/* gender toggle */
+.gender-tog{display:flex;border-radius:50px;overflow:hidden;border:1.5px solid rgba(162,89,255,.2);flex-shrink:0;}
+.gender-tog button{background:transparent;border:none;padding:0 11px;font-size:.82rem;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:900;transition:background .2s,color .2s;}
+.gender-tog button.am{background:rgba(89,170,255,.18);color:#59aaff;}
+.gender-tog button.af{background:rgba(255,77,166,.18);color:var(--a1);}
+
+/* confetti */
+.cp{position:fixed;top:-20px;border-radius:2px;opacity:0;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(100vh) rotate(720deg)}}
+
+/* accordion in settings */
+.acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;transition:background .2s;user-select:none;}
+.acc-hdr:active{background:rgba(162,89,255,.06);}
+.acc-hdr-lbl{font-weight:900;font-size:.9rem;display:flex;align-items:center;gap:8px;}
+.acc-hdr-r{display:flex;align-items:center;gap:8px;}
+.acc-meta{font-size:.74rem;color:var(--muted);font-weight:700;}
+.chev{font-size:.68rem;color:var(--muted);transition:transform .28s;display:inline-block;}
+.chev.open{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.acc-body.open{max-height:2000px;}
+.acc-inner{padding:0 16px 14px;display:flex;flex-direction:column;gap:9px;}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- ══════════════════════════════════════════
+     MAIN SCREEN
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-main">
+<div class="main-scroll">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <div class="game-title" id="main-title">Вечеринка 🔥</div>
+      <div class="round-info">Раунд <span id="round-num">0</span> · пропущено <span id="skip-num">0</span></div>
+    </div>
+    <div class="settings-btn" onclick="openSettings()">⚙️</div>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-kiss" onclick="setMode('kiss')">💋 Поцелуи</button>
+    <button class="mode-tab" id="tab-dare" onclick="setMode('dare')">🔥 Задания</button>
+  </div>
+
+  <!-- Players -->
+  <div class="players-scroll" id="players-scroll"></div>
+
+  <!-- Result card -->
+  <div class="result-card" id="result-card">
+    <div class="cat-badge" id="cat-badge"></div>
+    <div class="timer-wrap" id="timer-wrap">
+      <svg class="tring" width="56" height="56" viewBox="0 0 56 56">
+        <circle class="tbg" cx="28" cy="28" r="24"/>
+        <circle class="tarc" id="tarc" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+      </svg>
+      <div class="tnum" id="tnum">30</div>
+    </div>
+    <div class="dare-main" id="dare-main"><span class="placeholder-txt">Нажми кнопку и начнём! 🎲</span></div>
+  </div>
+
+  <!-- Warn -->
+  <div class="warn" id="warn"></div>
+
+  <!-- Buttons -->
+  <div class="btn-row">
+    <button class="btn-main" id="btn-spin" onclick="spin()">🎲 Крутить!</button>
+    <button class="btn-skip" id="btn-skip" style="display:none" onclick="skipRound()">⏭ Пропустить</button>
+  </div>
+
+  <!-- ── KISS PANEL ── -->
+  <div id="panel-kiss" style="margin-top:18px">
+    <div class="sec-label">Куда целовать <span id="parts-meta" style="color:var(--a2)"></span></div>
+    <div class="parts-wrap" id="parts-wrap"></div>
+    <div class="sel-row" style="margin-bottom:8px">
+      <button class="sel-btn" onclick="setAllParts(true)">✅ Все</button>
+      <button class="sel-btn" onclick="setAllParts(false)">❌ Снять все</button>
+    </div>
+    <div class="add-row">
+      <input class="ai" id="new-part-inp" placeholder="Своё место..." maxlength="40" onkeydown="if(event.key==='Enter')addPart()">
+      <button class="addbtn" onclick="addPart()">+ Добавить</button>
+    </div>
+  </div>
+
+  <!-- ── DARE PANEL ── -->
+  <div id="panel-dare" style="display:none;margin-top:18px">
+    <div class="sec-label">Категории</div>
+    <div class="cats">
+      <button class="cat-btn soft active" id="cat-soft" onclick="toggleCat('soft')">
+        <span class="cat-icon">🟢</span>Мягко<div class="cat-count" id="cnt-soft"></div>
+      </button>
+      <button class="cat-btn mid active" id="cat-mid" onclick="toggleCat('mid')">
+        <span class="cat-icon">🟡</span>Средне<div class="cat-count" id="cnt-mid"></div>
+      </button>
+      <button class="cat-btn hot active" id="cat-hot" onclick="toggleCat('hot')">
+        <span class="cat-icon">🔴</span>Жарко<div class="cat-count" id="cnt-hot"></div>
+      </button>
+    </div>
+  </div>
+
+</div><!-- /main-scroll -->
+</div><!-- /screen-main -->
+
+
+<!-- ══════════════════════════════════════════
+     SETTINGS SCREEN
+══════════════════════════════════════════ -->
+<div class="screen hidden" id="screen-settings">
+<div class="sett-scroll">
+
+  <div class="sett-topbar">
+    <div class="back-btn" onclick="closeSettings()">←</div>
+    <div class="sett-title">Настройки</div>
+  </div>
+
+  <!-- PLAYERS -->
+  <div class="sett-section">
+    <div class="sett-section-title">👥 Игроки</div>
+    <div class="scard">
+      <div style="padding:12px 16px 0">
+        <div id="sett-players-wrap" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px"></div>
+        <div class="add-row" style="margin-bottom:12px">
+          <input class="ai" id="new-player-name" placeholder="Имя игрока..." maxlength="20" onkeydown="if(event.key==='Enter')addPlayer()">
+          <div class="gender-tog">
+            <button id="gtm" class="am" onclick="setGender('m')">♂</button>
+            <button id="gtf" onclick="setGender('f')">♀</button>
+          </div>
+          <button class="addbtn" onclick="addPlayer()">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAIRS -->
+  <div class="sett-section">
+    <div class="sett-section-title">💑 Допустимые пары</div>
+    <div class="scard" style="padding:14px 16px">
+      <div class="pair-types" id="pair-types">
+        <button class="pair-type-btn active" data-pair="mf" onclick="togglePairType('mf')">
+          <span class="pt-icon">👫</span>М + Ж
+        </button>
+        <button class="pair-type-btn active" data-pair="ff" onclick="togglePairType('ff')">
+          <span class="pt-icon">👭</span>Ж + Ж
+        </button>
+        <button class="pair-type-btn" data-pair="mm" onclick="togglePairType('mm')">
+          <span class="pt-icon">👬</span>М + М
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SETTINGS -->
+  <div class="sett-section">
+    <div class="sett-section-title">⚙️ Игровые правила</div>
+    <div class="scard">
+      <div class="srow">
+        <div class="srow-lbl">⏱ Таймер на задание <span class="srow-sub">Обратный отсчёт после спина</span></div>
+        <label class="sw"><input type="checkbox" id="use-timer" onchange="toggleTimerOpts()"><span class="sw-sl"></span></label>
+      </div>
+      <div id="timer-opts" style="display:none">
+        <div class="timer-opts-row">
+          <button class="topt active" onclick="setTimer(this,15)">15с</button>
+          <button class="topt" onclick="setTimer(this,30)">30с</button>
+          <button class="topt" onclick="setTimer(this,45)">45с</button>
+          <button class="topt" onclick="setTimer(this,60)">60с</button>
+        </div>
+      </div>
+      <div class="srow">
+        <div class="srow-lbl">🔄 Все со всеми <span class="srow-sub">Очередь по кругу, никто дважды подряд</span></div>
+        <label class="sw"><input type="checkbox" id="round-robin"><span class="sw-sl"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- DARE EDITOR -->
+  <div class="sett-section">
+    <div class="sett-section-title">📝 Редактор заданий</div>
+    <div class="scard">
+      <div class="acc-hdr" onclick="toggleAcc('dare-acc-body','dare-acc-chev')">
+        <div class="acc-hdr-lbl">Все задания</div>
+        <div class="acc-hdr-r"><span class="acc-meta" id="dare-meta"></span><span class="chev" id="dare-acc-chev">▼</span></div>
+      </div>
+      <div class="acc-body" id="dare-acc-body">
+        <div class="acc-inner">
+          <div class="sel-row">
+            <button class="sel-btn" onclick="filterDares('all')">Все</button>
+            <button class="sel-btn" onclick="filterDares('soft')">🟢</button>
+            <button class="sel-btn" onclick="filterDares('mid')">🟡</button>
+            <button class="sel-btn" onclick="filterDares('hot')">🔴</button>
+          </div>
+          <div class="dare-list-wrap" id="dare-list"></div>
+          <div class="add-row" style="flex-wrap:wrap">
+            <select class="cat-sel" id="new-dare-cat">
+              <option value="soft">🟢 Мягко</option>
+              <option value="mid" selected>🟡 Средне</option>
+              <option value="hot">🔴 Жарко</option>
+            </select>
+            <input class="ai" id="new-dare-text" placeholder="Задание... (【А】и【Б】= имена)" maxlength="140" onkeydown="if(event.key==='Enter')addDare()" style="flex:1;min-width:120px">
+            <button class="addbtn" onclick="addDare()">+</button>
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);line-height:1.5;">💡 Используй <b style="color:var(--a1)">【А】</b> для первого игрока и <b style="color:var(--a2)">【Б】</b> для второго. Не используй просто буквы А и Б — они не заменятся!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="sett-section">
+    <div class="sett-section-title">📜 История раундов</div>
+    <div class="scard">
+      <div class="acc-hdr" onclick="toggleAcc('hist-acc-body','hist-acc-chev')">
+        <div class="acc-hdr-lbl">Раунды</div>
+        <div class="acc-hdr-r"><span class="acc-meta" id="hist-meta">0 раундов</span><span class="chev" id="hist-acc-chev">▼</span></div>
+      </div>
+      <div class="acc-body" id="hist-acc-body">
+        <div class="acc-inner">
+          <div class="hist-list" id="hist-list">
+            <div style="color:var(--muted);font-size:.82rem;font-weight:700;text-align:center;padding:6px 0">Пока пусто 👀</div>
+          </div>
+          <button class="sel-btn" onclick="clearHistory()">🗑 Очистить историю</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /sett-scroll -->
+</div><!-- /screen-settings -->
+
+<script>
+// ═══════════════════════ PLAYERS ═══════════════════════
+let players = [
+  {name:'Дуня',gender:'f'},{name:'Амир',gender:'m'},
+  {name:'Настя',gender:'f'},{name:'Маша',gender:'f'},
+  {name:'Семён',gender:'m'},{name:'Александр',gender:'m'},
+];
+let newGender = 'm';
+let rrQueue = [];
+
+function renderPlayers() {
+  // Main screen chips (horizontal scroll)
+  const ms = document.getElementById('players-scroll');
+  ms.innerHTML = '';
+  players.forEach((p,i) => {
+    const c = document.createElement('div');
+    c.className = `pchip ${p.gender}`; c.id = `pchip-${i}`;
+    c.innerHTML = `<span class="gdot"></span>${p.name}`;
+    ms.appendChild(c);
+  });
+  // Settings screen chips
+  const sw = document.getElementById('sett-players-wrap');
+  sw.innerHTML = '';
+  players.forEach((p,i) => {
+    const c = document.createElement('div');
+    c.className = `pchip ${p.gender}`;
+    c.innerHTML = `<span class="gdot"></span>${p.name}<span class="prm" style="margin-left:4px;cursor:pointer;opacity:.4;font-size:.72rem" onclick="removePlayer(${i})">✕</span>`;
+    sw.appendChild(c);
+  });
+}
+function removePlayer(i) {
+  if(players.length<=2){showWarn('Нужно минимум 2 игрока!');return;}
+  players.splice(i,1); rrQueue=[]; renderPlayers();
+}
+function setGender(g) {
+  newGender=g;
+  document.getElementById('gtm').className=g==='m'?'am':'';
+  document.getElementById('gtf').className=g==='f'?'af':'';
+}
+function addPlayer() {
+  const inp=document.getElementById('new-player-name');
+  const name=inp.value.trim(); if(!name) return;
+  players.push({name,gender:newGender}); inp.value=''; rrQueue=[]; renderPlayers();
+}
+
+// ═══════════════════════ PAIR TYPES ═══════════════════════
+// Which pair combos are allowed: mf, ff, mm
+let allowedPairs = new Set(['mf','ff']); // mm off by default
+
+function togglePairType(pt) {
+  const btn = document.querySelector(`.pair-type-btn[data-pair="${pt}"]`);
+  if(allowedPairs.has(pt)) {
+    if(allowedPairs.size===1){showWarn('Оставь хотя бы одну комбинацию!');return;}
+    allowedPairs.delete(pt); btn.classList.remove('active');
+  } else {
+    allowedPairs.add(pt); btn.classList.add('active');
+  }
+}
+
+function pairAllowed(i1, i2) {
+  const g1=players[i1].gender, g2=players[i2].gender;
+  if(g1==='m'&&g2==='m') return allowedPairs.has('mm');
+  if(g1==='f'&&g2==='f') return allowedPairs.has('ff');
+  return allowedPairs.has('mf');
+}
+
+// ═══════════════════════ BODY PARTS ═══════════════════════
+let allParts = [
+  'в щёку','в лоб','в нос','в ухо','в шею','в макушку',
+  'в плечо','в руку','в ладонь','в запястье','в висок',
+  'в подбородок','в кончик носа','в колено','в локоть',
+  'в живот','в бедро','в предплечье','в ключицы','в ягодицу','в губы',
+];
+const BUILTIN_PARTS = allParts.length;
+let activeParts = new Set(allParts.map((_,i)=>i));
+
+function renderParts() {
+  const w = document.getElementById('parts-wrap'); w.innerHTML='';
+  allParts.forEach((p,i) => {
+    const el=document.createElement('div');
+    el.className='part-tag'+(activeParts.has(i)?' on':''); el.id=`pt-${i}`;
+    el.innerHTML=`<span class="dot"></span>${p}${i>=BUILTIN_PARTS?` <span class="prm">✕</span>`:''}`;
+    el.onclick=(e)=>{ if(e.target.classList.contains('prm')){removePart(i);return;} togglePart(i); };
+    w.appendChild(el);
+  });
+  document.getElementById('parts-meta').textContent=`${activeParts.size}/${allParts.length}`;
+}
+function togglePart(i) {
+  if(activeParts.has(i)) activeParts.delete(i); else activeParts.add(i);
+  const el=document.getElementById(`pt-${i}`); if(el) el.classList.toggle('on',activeParts.has(i));
+  document.getElementById('parts-meta').textContent=`${activeParts.size}/${allParts.length}`;
+}
+function setAllParts(on) {
+  allParts.forEach((_,i)=>{ if(on)activeParts.add(i);else activeParts.delete(i); const el=document.getElementById(`pt-${i}`); if(el)el.classList.toggle('on',on); });
+  document.getElementById('parts-meta').textContent=`${activeParts.size}/${allParts.length}`;
+}
+function addPart() {
+  const inp=document.getElementById('new-part-inp'); let v=inp.value.trim(); if(!v) return;
+  if(!/^(в|на|под|за)\s/i.test(v)) v='в '+v;
+  allParts.push(v); activeParts.add(allParts.length-1); inp.value=''; renderParts();
+}
+function removePart(i) {
+  allParts.splice(i,1);
+  const na=new Set(); activeParts.forEach(x=>{ if(x<i)na.add(x);else if(x>i)na.add(x-1); }); activeParts=na;
+  renderParts();
+}
+
+// ═══════════════════════ DARES ═══════════════════════
+const DARES = {
+  soft: [
+    '【А】 обнимает 【Б】 на 5 секунд',
+    '【А】 говорит 【Б】 три искренних комплимента',
+    '【А】 целует 【Б】 в щёку',
+    '【А】 и 【Б】 смотрят друг другу в глаза молча 10 секунд',
+    '【А】 делает 【Б】 массаж плеч 30 секунд',
+    '【А】 говорит 【Б】 что-то, что никогда раньше не говорил(а)',
+    '【А】 берёт 【Б】 за руку и не отпускает до следующего раунда',
+    '【А】 угадывает любимую песню 【Б】 — 3 попытки',
+    '【А】 и 【Б】 вместе придумывают тост и произносят его вслух',
+    '【А】 целует 【Б】 в лоб',
+    '【А】 рисует пальцем по спине 【Б】 букву, 【Б】 угадывает',
+    '【А】 говорит 【Б】, за что он(а) его(её) ценит',
+    '【А】 гладит 【Б】 по голове 10 секунд',
+    '【А】 называет три лучших черты характера 【Б】',
+    '【А】 шёпотом говорит 【Б】 секрет, который никто не знает',
+    '【А】 угадывает знак зодиака 【Б】 — если ошибся(лась), обнимает ещё раз',
+    '【А】 и 【Б】 обнимаются и стоят молча 15 секунд',
+    '【А】 говорит 【Б】: за что бы выдал(а) ему(ей) награду сегодня',
+    '【А】 закрывает глаза, 【Б】 кладёт в руку любой предмет — 【А】 угадывает',
+    '【А】 описывает 【Б】 тремя прилагательными, не называя внешность',
+    '【А】 и 【Б】 меняются обувью на два раунда',
+    '【А】 угадывает любимый фильм 【Б】 — если угадал(а), 【Б】 исполняет желание',
+    '【А】 рассказывает 【Б】 что-то хорошее, что произошло с ним(ней) сегодня',
+    '【А】 делает 【Б】 оригами или фигурку из салфетки',
+    '【А】 и 【Б】 придумывают общее прозвище на этот вечер',
+    '【А】 говорит 【Б】 в чём тот(та) лучший(ая) из всех присутствующих',
+    '【А】 тихо напевает 【Б】 на ухо любую песню 10 секунд',
+    '【А】 описывает 【Б】 как персонажа из сказки',
+    '【А】 угадывает любимое блюдо 【Б】 — 5 попыток',
+    '【А】 и 【Б】 обмениваются телефонами на 1 минуту — можно посмотреть последний мем',
+    '【А】 придумывает 【Б】 суперспособность и объясняет почему',
+    '【А】 рисует портрет 【Б】 за 30 секунд на чём угодно',
+    '【А】 и 【Б】 синхронно повторяют одно движение 5 раз подряд',
+    '【А】 угадывает любимый цвет 【Б】',
+    '【А】 говорит 【Б】 одну вещь, которую всегда хотел(а) сказать, но не говорил(а)',
+    '【А】 делает 【Б】 массаж рук 20 секунд',
+    '【А】 и 【Б】 придумывают правило игры, которое действует весь оставшийся вечер',
+    '【А】 комплиментирует улыбку 【Б】',
+    '【А】 дарит 【Б】 любой предмет со стола — и объясняет почему именно его',
+    '【А】 называет три города, где хотел(а) бы побывать вместе с 【Б】',
+    '【А】 угадывает детское прозвище 【Б】',
+    '【А】 и 【Б】 три раза говорят друг другу «спасибо» за разные вещи',
+    '【А】 описывает 【Б】 через любимую еду',
+    '【А】 кладёт руку на плечо 【Б】 и говорит что-то тёплое',
+    '【А】 придумывает 【Б】 девиз на жизнь',
+    '【А】 угадывает любимое время года 【Б】 — если нет, обнимает',
+    '【А】 говорит 【Б】, какую роль тот(та) сыграл(а) бы в их общем фильме',
+    '【А】 и 【Б】 придумывают общий секретный знак на вечер',
+    '【А】 признаётся 【Б】 в чём-нибудь смешном или стыдном',
+    '【А】 угадывает возраст 【Б】 — если ошибается более чем на 2 года, исполняет желание',
+    '【А】 говорит 【Б】 какое у него(неё) лучшее качество как друга(подруги)',
+    '【А】 и 【Б】 обмениваются по одному факту о себе, который никто не знает',
+    '【А】 называет три вещи, которые его(её) восхищают в 【Б】',
+    '【А】 пишет 【Б】 воображаемое письмо из будущего — вслух, 30 секунд',
+    '【А】 угадывает сколько лет 【Б】 знает кого-то из присутствующих',
+    '【А】 и 【Б】 придумывают слоган для воображаемого бизнеса вместе',
+    '【А】 смотрит 【Б】 в глаза и говорит: «Ты мне нравишься потому что...»',
+    '【А】 угадывает последнюю книгу или сериал 【Б】',
+    '【А】 делает 【Б】 лёгкий массаж висков 15 секунд',
+    '【А】 описывает 【Б】 тремя словами на иностранном языке — 【Б】 угадывает что это',
+    '【А】 и 【Б】 вместе придумывают смешной заголовок для новости про этот вечер',
+    '【А】 называет одно воспоминание с 【Б】, которое особенно запомнилось',
+    '【А】 угадывает самое неловкое воспоминание 【Б】 — 【Б】 оценивает близость',
+    '【А】 говорит 【Б】 какой момент сегодня вечером ему(ей) больше всего понравился',
+    '【А】 и 【Б】 обмениваются местами на весь следующий раунд',
+    '【А】 описывает 【Б】 через животное и объясняет почему',
+    '【А】 рассказывает 【Б】 о своей мечте в одном предложении',
+    '【А】 угадывает что 【Б】 обычно делает первым делом после пробуждения',
+    '【А】 и 【Б】 загадывают одно желание вслух одновременно',
+    '【А】 называет любимую черту характера 【Б】',
+    '【А】 делает 【Б】 оригинальный комплимент — не про внешность',
+    '【А】 рассказывает 【Б】 забавный факт о себе',
+    '【А】 и 【Б】 вместе придумывают песню из двух строчек прямо сейчас',
+    '【А】 угадывает хобби 【Б】, о котором тот(та) редко рассказывает',
+    '【А】 говорит 【Б】 чем бы занялся(ась) если бы оказался(ась) на необитаемом острове вместе',
+    '【А】 кладёт руку на сердце и говорит 【Б】 что-то искреннее',
+    '【А】 и 【Б】 придумывают себе общий хэштег',
+    '【А】 делает 【Б】 «высокую оценку» — поднимает большой палец и говорит за что',
+    '【А】 называет звезду или персонажа, на которого похож(а) 【Б】 — и объясняет',
+    '【А】 и 【Б】 придумывают правила идеальной вечеринки вместе — по одному пункту',
+    '【А】 рассказывает 【Б】 о своём самом ярком детском воспоминании',
+    '【А】 угадывает любимый напиток 【Б】',
+    '【А】 говорит 【Б】 чем бы угостил(а) его(её) если бы готовил(а) ужин',
+    '【А】 описывает 【Б】 через три emoji вслух',
+    '【А】 и 【Б】 обмениваются по одной рекомендации — фильм, книга или музыка',
+    '【А】 говорит 【Б】 что в нём(ней) выглядит сегодня особенно хорошо',
+    '【А】 придумывает для 【Б】 идеальный отпуск на неделю',
+    '【А】 угадывает самое смешное что случалось с 【Б】 на вечеринке',
+    '【А】 и 【Б】 договариваются встретиться на следующей неделе — или придумывают отмазку',
+    '【А】 называет одну черту 【Б】, которой сам(а) хотел(а) бы обладать',
+    '【А】 говорит 【Б】 что напомнил(а) ему(ей) сегодня вечером',
+    '【А】 и 【Б】 загадывают желание за здоровье друг друга — и выпивают',
+    '【А】 делает 【Б】 смешное прозвище на основе его(её) поведения сегодня',
+    '【А】 угадывает самое частое слово-паразит 【Б】',
+    '【А】 и 【Б】 придумывают что бы написали друг другу в рекомендательном письме',
+    '【А】 говорит 【Б】 одну вещь которую хотел(а) бы у него(неё) перенять',
+    '【А】 угадывает первое впечатление которое произвёл(а) на него(неё) 【Б】',
+    '【А】 и 【Б】 вместе делают тост за одного из присутствующих — кроме себя',
+    '【А】 угадывает любимое место 【Б】 в городе',
+  ],
+  mid: [
+    '【А】 целует 【Б】 в губы на 3 секунды',
+    '【А】 садится на колени к 【Б】 на один раунд',
+    '【А】 нежно кусает 【Б】 за ухо',
+    '【А】 шепчет 【Б】 на ухо что-то пикантное',
+    '【А】 целует 【Б】 в шею',
+    '【А】 проводит руками по волосам 【Б】',
+    '【А】 и 【Б】 танцуют медленный танец 30 секунд',
+    '【А】 говорит 【Б】, что нашёл(а) в нём(ней) сексуальным',
+    '【А】 целует 【Б】 в ключицы',
+    '【А】 снимает один предмет одежды с 【Б】',
+    '【А】 и 【Б】 играют в гляделки — проигравший целует победителя куда скажут',
+    '【А】 кормит 【Б】 с руки любым снеком',
+    '【А】 целует 【Б】 в живот',
+    '【А】 нежно гладит 【Б】 по бедру 10 секунд',
+    '【А】 и 【Б】 пьют из одного стакана, не отрываясь от глаз друг друга',
+    '【А】 рисует пальцем узор на шее 【Б】',
+    '【А】 медленно водит пальцами по руке 【Б】 от запястья до плеча',
+    '【А】 делает комплимент телу 【Б】 — конкретно и вслух',
+    '【А】 и 【Б】 обмениваются любым предметом одежды на 2 раунда',
+    '【А】 нежно кусает 【Б】 за нижнюю губу',
+    '【А】 кладёт голову на плечо 【Б】 и остаётся так до следующего раунда',
+    '【А】 шёпотом говорит 【Б】, что его(её) сводит с ума в нём(ней)',
+    '【А】 проводит пальцем по губам 【Б】',
+    '【А】 целует 【Б】 в запястье',
+    '【А】 и 【Б】 держатся за руки до конца следующего раунда',
+    '【А】 целует 【Б】 за ухом',
+    '【А】 медленно убирает волосы 【Б】 с лица',
+    '【А】 говорит 【Б】 одну вещь, которая его(её) заводит в нём(ней)',
+    '【А】 прижимается лбом к лбу 【Б】 и смотрит в глаза 5 секунд',
+    '【А】 и 【Б】 обнимаются сзади — 【А】 обнимает 【Б】 15 секунд',
+    '【А】 целует 【Б】 в висок',
+    '【А】 проводит ладонью по спине 【Б】 сверху вниз',
+    '【А】 целует каждый палец руки 【Б】',
+    '【А】 шепчет 【Б】 на ухо имя которое дал(а) бы ему(ей) если бы мог(ла) переименовать',
+    '【А】 и 【Б】 меняются стульями и остаются рядом весь следующий раунд',
+    '【А】 гладит 【Б】 по щеке тыльной стороной ладони',
+    '【А】 целует 【Б】 в плечо',
+    '【А】 медленно проводит пальцами по ключицам 【Б】',
+    '【А】 смотрит 【Б】 в глаза и не моргает пока тот(та) не засмеётся',
+    '【А】 и 【Б】 слушают одну песню в одних наушниках — каждый в одном ухе',
+    '【А】 целует 【Б】 в плечо и кусает легонько',
+    '【А】 говорит 【Б】 что хотел(а) бы сделать с ним(ней) если бы все ушли',
+    '【А】 рисует пальцем слово на руке 【Б】 — 【Б】 угадывает не глядя',
+    '【А】 и 【Б】 танцуют под любую музыку — 【А】 ведёт',
+    '【А】 целует 【Б】 в ямочку на подбородке',
+    '【А】 нежно держит лицо 【Б】 в ладонях 5 секунд',
+    '【А】 и 【Б】 придумывают стриптиз-имена друг другу',
+    '【А】 говорит 【Б】 что ему(ей) больше всего нравится в голосе 【Б】',
+    '【А】 снимает с 【Б】 украшение или аксессуар и надевает на себя',
+    '【А】 целует 【Б】 в шею сзади',
+    '【А】 медленно проводит пальцем по позвоночнику 【Б】',
+    '【А】 и 【Б】 обнимаются так крепко как только могут — 10 секунд',
+    '【А】 шепчет 【Б】 самый смешной комплимент на который способен(на)',
+    '【А】 целует 【Б】 в ладонь',
+    '【А】 и 【Б】 придумывают сцену из фильма и разыгрывают 20 секунд',
+    '【А】 гладит 【Б】 по предплечью медленно 15 секунд',
+    '【А】 целует 【Б】 в локоть',
+    '【А】 говорит 【Б】 каким(ой) тот(та) был(а) бы в постели — по мнению 【А】',
+    '【А】 и 【Б】 смотрят друг на друга не говоря ни слова пока кто-то не засмеётся',
+    '【А】 целует 【Б】 медленно в щёку — дольше чем обычно',
+    '【А】 нежно тянет 【Б】 за мочку уха',
+    '【А】 и 【Б】 обмениваются кольцами или браслетами на раунд',
+    '【А】 целует 【Б】 в угол рта',
+    '【А】 медленно расплетает или заплетает волосы 【Б】',
+    '【А】 говорит 【Б】 какое движение тела 【Б】 его(её) больше всего привлекает',
+    '【А】 и 【Б】 вместе фотографируются максимально близко',
+    '【А】 целует 【Б】 по линии челюсти',
+    '【А】 кладёт ладонь на колено 【Б】 на следующие два раунда',
+    '【А】 говорит 【Б】 на каком языке хотел(а) бы, чтобы тот(та) говорил(а)',
+    '【А】 и 【Б】 придумывают «кодовое слово» которое значит «поцелуй меня»',
+    '【А】 целует 【Б】 в ключицу и задерживается на 3 секунды',
+    '【А】 прослеживает взглядом 【Б】 сверху вниз и говорит что понравилось больше всего',
+    '【А】 и 【Б】 кормят друг друга с закрытыми глазами',
+    '【А】 целует 【Б】 в руку как на средневековом балу',
+    '【А】 гладит 【Б】 по лицу закрытыми глазами — «как скульптор»',
+    '【А】 и 【Б】 дышат синхронно 15 секунд — лицом к лицу',
+    '【А】 целует 【Б】 в лоб очень медленно',
+    '【А】 говорит 【Б】 что надел(а) бы на него(неё) на свидание',
+    '【А】 и 【Б】 пишут друг другу номер по шкале привлекательности — но показывают только по сигналу',
+    '【А】 трогает 【Б】 за подбородок и говорит что-то игривое',
+    '【А】 целует 【Б】 в запястье медленно',
+    '【А】 и 【Б】 придумывают как бы встретились если бы не знали друг друга',
+    '【А】 целует 【Б】 в ухо',
+    '【А】 проводит большим пальцем по нижней губе 【Б】',
+    '【А】 и 【Б】 придумывают 5 слов которыми описали бы прошлую ночь вместе — воображаемую',
+    '【А】 смотрит 【Б】 в глаза и говорит: «Ты очень...» — заканчивает пикантно',
+    '【А】 целует 【Б】 медленно в плечо и кусает',
+    '【А】 описывает 【Б】 как будто рекламирует его(её) кому-то',
+    '【А】 нежно сжимает руку 【Б】 и держит до конца раунда',
+    '【А】 целует 【Б】 в солнечное сплетение',
+    '【А】 шёпотом называет 【Б】 тремя пошлыми прилагательными',
+    '【А】 и 【Б】 придумывают что бы сделали на первом настоящем свидании',
+    '【А】 целует 【Б】 сначала в лоб, потом в нос, потом в подбородок',
+    '【А】 говорит 【Б】 что у него(неё) самые... и заканчивает сам(а)',
+    '【А】 медленно сдвигает ворот рубашки(футболки) 【Б】 и целует плечо',
+    '【А】 и 【Б】 придумывают по одному правилу для идеальной ночи вместе',
+    '【А】 говорит 【Б】 что хочет сделать с ним(ней) прямо сейчас но не может',
+  ],  hot: [
+    '【А】 целует 【Б】 страстно, как в кино, не меньше 7 секунд',
+    '【А】 целует 【Б】 в ягодицу',
+    '【А】 рассказывает 【Б】 свою самую пикантную фантазию',
+    '【А】 делает 【Б】 массаж бёдер 30 секунд',
+    '【А】 и 【Б】 целуются с закрытыми глазами — компания считает до 10',
+    '【А】 шёпотом описывает 【Б】 что сделал(а) бы с ним(ней) наедине',
+    '【А】 целует 【Б】 от шеи до плеча, не отрываясь',
+    '【А】 проводит кубиком льда по шее и декольте 【Б】',
+    '【А】 завязывает 【Б】 глаза и целует куда захочет (кроме запрещённых зон)',
+    '【А】 снимает с 【Б】 носок зубами',
+    '【А】 шёпотом говорит 【Б】 три вещи, которые хочет с ним(ней) сделать',
+    '【А】 гладит 【Б】 по внутренней стороне бедра 10 секунд',
+    '【А】 облизывает шею 【Б】',
+    '【А】 и 【Б】 целуются пока компания не скажет стоп — но не раньше 10 секунд',
+    '【А】 медленно расстёгивает верхнюю пуговицу на рубашке 【Б】',
+    '【А】 дышит в ухо 【Б】 и говорит что-то на грани',
+    '【А】 берёт 【Б】 за руку и кладёт её себе на талию, смотря в глаза',
+    '【А】 и 【Б】 по очереди называют что их больше всего возбуждает',
+    '【А】 медленно проводит языком по губам 【Б】',
+    '【А】 снимает с 【Б】 любую вещь зубами без рук',
+    '【А】 говорит 【Б】 что хотел(а) бы сделать с ним(ней) если бы все вышли из комнаты',
+    '【А】 и 【Б】 стоят вплотную лоб ко лбу 10 секунд — не целуясь',
+    '【А】 проводит губами по ключицам 【Б】',
+    '【А】 кусает 【Б】 за плечо так чтобы остался след',
+    '【А】 и 【Б】 целуются с языком — компания считает до 5',
+    '【А】 медленно стягивает ремень 【Б】',
+    '【А】 целует 【Б】 ниже пупка',
+    '【А】 и 【Б】 раздеваются на один предмет одежды',
+    '【А】 облизывает палец 【Б】',
+    '【А】 шёпотом объясняет 【Б】 что сделал(а) бы с ним(ней) в душе',
+    '【А】 целует 【Б】 по всей спине снизу вверх',
+    '【А】 и 【Б】 изображают сцену из пошлого фильма на выбор компании',
+    '【А】 кусает 【Б】 за нижнюю губу и тянет',
+    '【А】 медленно проводит языком по шее 【Б】',
+    '【А】 целует 【Б】 в паховую область — максимально близко к границе',
+    '【А】 гладит 【Б】 под одеждой по пояснице 15 секунд',
+    '【А】 и 【Б】 описывают друг другу идеальную сцену в постели — по очереди',
+    '【А】 целует 【Б】 по линии бикини/боксеров',
+    '【А】 медленно снимает с 【Б】 рубашку или футболку',
+    '【А】 и 【Б】 трутся носами затем резко целуются',
+    '【А】 кусает 【Б】 за икру',
+    '【А】 целует 【Б】 в грудь',
+    '【А】 шёпотом называет 【Б】 самое пошлое обращение которое придумает',
+    '【А】 и 【Б】 играют в «горячо-холодно» — 【Б】 с закрытыми глазами угадывает куда 【А】 дотронется следующим',
+    '【А】 целует 【Б】 прямо в угол рта и задерживается',
+    '【А】 медленно расстёгивает штаны 【Б】 — на одну пуговицу',
+    '【А】 облизывает ухо 【Б】',
+    '【А】 и 【Б】 целуются стоя — 【А】 прижимает 【Б】 к стене',
+    '【А】 нежно кусает грудь 【Б】 через одежду',
+    '【А】 говорит 【Б】 что готов(а) сделать прямо сейчас если никого не будет',
+    '【А】 медленно снимает нижнее бельё 【Б】 — только начинает',
+    '【А】 проводит языком по ключицам 【Б】',
+    '【А】 и 【Б】 целуются лёжа — компания считает до 8',
+    '【А】 гладит 【Б】 по ягодице под одеждой',
+    '【А】 целует 【Б】 в подколенную ямку',
+    '【А】 и 【Б】 вместе придумывают и разыгрывают пошлую сцену знакомства незнакомцев',
+    '【А】 шёпотом описывает 【Б】 свой любимый сексуальный сценарий',
+    '【А】 снимает зубами заколку или резинку из волос 【Б】',
+    '【А】 и 【Б】 смотрят друг другу в глаза пока один не скажет что-то пошлое',
+    '【А】 целует 【Б】 в промежность через одежду',
+    '【А】 медленно проводит пальцами по внутренней стороне руки 【Б】 до плеча и целует плечо',
+    '【А】 и 【Б】 обмениваются самой откровенной фантазией друг о друге',
+    '【А】 облизывает пальцы 【Б】 один за другим',
+    '【А】 тянет 【Б】 за волосы — нежно — и целует шею',
+    '【А】 и 【Б】 изображают сцену из любого жанра на выбор компании',
+    '【А】 целует 【Б】 от щиколотки до колена',
+    '【А】 говорит 【Б】 что чувствует когда тот(та) рядом — максимально откровенно',
+    '【А】 и 【Б】 целуются закрыв глаза пока компания не апплодирует',
+    '【А】 медленно целует 【Б】 за ухо и говорит туда что-то',
+    '【А】 рассказывает 【Б】 самый пошлый сон в котором тот(та) снился(ась)',
+    '【А】 гладит 【Б】 по животу под одеждой',
+    '【А】 и 【Б】 придумывают 18+ название для коктейля и объясняют ингредиенты',
+    '【А】 целует 【Б】 прямо под ремнём',
+    '【А】 говорит 【Б】 где хотел(а) бы заняться сексом прямо сейчас',
+    '【А】 нежно кусает мочку уха 【Б】 и дышит в шею',
+    '【А】 и 【Б】 описывают друг другу идеальный секс по одному предложению по очереди',
+    '【А】 снимает с 【Б】 бюстгальтер или расстёгивает рубашку полностью',
+    '【А】 целует 【Б】 везде куда тот(та) покажет пальцем — 3 места',
+    '【А】 и 【Б】 целуются под музыку — в ритм',
+    '【А】 гладит 【Б】 по груди медленно',
+    '【А】 шёпотом говорит 【Б】 что наденет(нет) если они встретятся вдвоём',
+    '【А】 целует 【Б】 ниже поясницы',
+    '【А】 и 【Б】 изображают замедленную пошлую сцену из кино на выбор',
+    '【А】 описывает идеальный секс с 【Б】 как кинорецензию',
+    '【А】 и 【Б】 целуются пока не вмешается кто-то из компании',
+    '【А】 делает 【Б】 массаж ягодиц 20 секунд',
+    '【А】 снимает с 【Б】 трусы на несколько сантиметров — и возвращает',
+    '【А】 проводит языком от шеи 【Б】 до ключицы',
+    '【А】 и 【Б】 придумывают сцену для их личного 18+ фильма — с названием и слоганом',
+    '【А】 шёпотом говорит 【Б】 после чего у него(неё) возникают мысли о сексе',
+    '【А】 целует 【Б】 в бедро изнутри',
+    '【А】 и 【Б】 смотрят друг другу в глаза пока один не скажет вслух что думает о другом прямо сейчас',
+    '【А】 целует 【Б】 страстно — руки можно — пока компания не скажет стоп',
+    '【А】 называет одну вещь которую хочет испытать с 【Б】 в постели',
+    '【А】 и 【Б】 ложатся рядом и 60 секунд молчат — что будет дальше решают сами',
+    '【А】 целует 【Б】 туда куда тот(та) давно хотел(а) чтобы его(её) поцеловали',
+    '【А】 и 【Б】 по очереди снимают предмет одежды пока компания считает',
+    '【А】 шёпотом называет 【Б】 роль которую хотел(а) бы сыграть с ним(ней) в постели',
+  ],
+};
+let customDares={soft:[],mid:[],hot:[]};
+let activeCats=new Set(['soft','mid','hot']);
+let dareFilter='all';
+
+function renderDareList() {
+  const list=document.getElementById('dare-list'); list.innerHTML='';
+  const cats=dareFilter==='all'?['soft','mid','hot']:[dareFilter];
+  let any=false;
+  cats.forEach(cat=>{
+    [...DARES[cat].map((t,i)=>({t,cat,custom:false,ci:i})),
+     ...customDares[cat].map((t,i)=>({t,cat,custom:true,ci:i}))]
+    .forEach(({t,cat,custom,ci})=>{
+      any=true;
+      const d=document.createElement('div'); d.className='di';
+      d.innerHTML=`<span class="di-cat ${cat}">${cat==='soft'?'мягко':cat==='mid'?'средне':'жарко'}</span><span class="di-text">${t}</span>${custom?`<span class="di-rm" onclick="removeCustomDare('${cat}',${ci})">✕</span>`:''}`;
+      list.appendChild(d);
+    });
+  });
+  if(!any) list.innerHTML='<div style="color:var(--muted);font-size:.82rem;font-weight:700;padding:4px 0">Нет заданий</div>';
+  updateDareMeta(); updateCatCounts();
+}
+function filterDares(f){dareFilter=f;renderDareList();}
+function addDare(){
+  const inp=document.getElementById('new-dare-text'),cat=document.getElementById('new-dare-cat').value;
+  const t=inp.value.trim(); if(!t) return;
+  customDares[cat].push(t); inp.value=''; renderDareList();
+}
+function removeCustomDare(cat,i){customDares[cat].splice(i,1);renderDareList();}
+function updateDareMeta(){
+  const n=['soft','mid','hot'].reduce((a,c)=>a+DARES[c].length+customDares[c].length,0);
+  document.getElementById('dare-meta').textContent=`${n} заданий`;
+}
+function updateCatCounts(){
+  ['soft','mid','hot'].forEach(c=>{
+    document.getElementById(`cnt-${c}`).textContent=`${DARES[c].length+customDares[c].length} зад.`;
+  });
+}
+function toggleCat(cat){
+  if(activeCats.has(cat)){
+    if(activeCats.size===1){showWarn('Оставь хотя бы одну категорию!');return;}
+    activeCats.delete(cat); document.getElementById(`cat-${cat}`).classList.remove('active');
+  } else {
+    activeCats.add(cat); document.getElementById(`cat-${cat}`).classList.add('active');
+  }
+}
+
+// ═══════════════════════ TIMER ═══════════════════════
+let timerSecs=15, timerInterval=null;
+function toggleTimerOpts(){
+  document.getElementById('timer-opts').style.display=document.getElementById('use-timer').checked?'block':'none';
+}
+function setTimer(btn,s){
+  timerSecs=s;
+  document.querySelectorAll('.topt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function startTimer(){
+  stopTimer();
+  if(!document.getElementById('use-timer').checked) return;
+  let rem=timerSecs;
+  const circ=2*Math.PI*24; // 150.8
+  const wrap=document.getElementById('timer-wrap'),arc=document.getElementById('tarc'),num=document.getElementById('tnum');
+  wrap.classList.add('active'); arc.style.strokeDashoffset='0'; num.textContent=rem;
+  timerInterval=setInterval(()=>{
+    rem--; num.textContent=rem;
+    arc.style.strokeDashoffset=(circ*(1-rem/timerSecs)).toString();
+    if(rem<=0){stopTimer();num.textContent='⏰';}
+  },1000);
+}
+function stopTimer(){clearInterval(timerInterval);document.getElementById('timer-wrap').classList.remove('active');}
+
+// ═══════════════════════ PAIR ═══════════════════════
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function getPair(){
+  const rrOn=document.getElementById('round-robin').checked;
+  if(rrOn){
+    if(rrQueue.length<2) rrQueue=shuffle(players.map((_,i)=>i));
+    const i1=rrQueue.shift();
+    let pool=players.map((_,i)=>i).filter(i=>i!==i1&&pairAllowed(i1,i));
+    if(!pool.length) pool=players.map((_,i)=>i).filter(i=>i!==i1);
+    return [i1, pool[Math.floor(Math.random()*pool.length)]];
+  }
+  for(let t=0;t<400;t++){
+    const i1=Math.floor(Math.random()*players.length);
+    let i2; do{i2=Math.floor(Math.random()*players.length);}while(i2===i1);
+    if(pairAllowed(i1,i2)) return [i1,i2];
+  }
+  return null;
+}
+
+// ═══════════════════════ MODE ═══════════════════════
+let currentMode='kiss';
+function setMode(mode){
+  currentMode=mode;
+  document.getElementById('tab-kiss').classList.toggle('active',mode==='kiss');
+  document.getElementById('tab-dare').classList.toggle('active',mode==='dare');
+  document.getElementById('panel-kiss').style.display=mode==='kiss'?'block':'none';
+  document.getElementById('panel-dare').style.display=mode==='dare'?'block':'none';
+  resetCard(mode==='kiss'?'Выбери кто кого целует 💋':'Выбери категории и крути! 🔥');
+}
+function resetCard(txt){
+  const card=document.getElementById('result-card'),dm=document.getElementById('dare-main'),cb=document.getElementById('cat-badge');
+  card.className='result-card'; dm.classList.remove('vis'); cb.classList.remove('vis');
+  dm.innerHTML=`<span class="placeholder-txt">${txt}</span>`;
+  stopTimer(); document.getElementById('btn-skip').style.display='none';
+  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}`;});
+}
+
+// ═══════════════════════ SPIN ═══════════════════════
+let round=0,skips=0,history=[];
+
+function spin(){
+  const pair=getPair();
+  if(!pair){showWarn('Нет допустимых пар с текущими настройками!');return;}
+  showWarn('');
+
+  if(currentMode==='dare'){
+    const pool=[]; activeCats.forEach(cat=>{DARES[cat].forEach(t=>pool.push({t,cat}));customDares[cat].forEach(t=>pool.push({t,cat}));});
+    if(!pool.length){showWarn('Нет активных заданий!');return;}
+    execSpin(pair,pool);
+  } else {
+    if(activeParts.size===0){showWarn('Выбери хотя бы одну часть тела!');return;}
+    execSpin(pair,null);
+  }
+}
+
+function execSpin(pair, darePool){
+  round++; document.getElementById('round-num').textContent=round;
+  document.getElementById('btn-skip').style.display='inline-block';
+
+  const btn=document.getElementById('btn-spin');
+  btn.classList.add('spin-anim'); btn.disabled=true;
+  setTimeout(()=>{btn.classList.remove('spin-anim');btn.disabled=false;},440);
+
+  const [i1,i2]=pair;
+  const nA=players[i1].name, nB=players[i2].name;
+
+  // highlight chips
+  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}`;});
+  const ca=document.getElementById(`pchip-${i1}`),cb=document.getElementById(`pchip-${i2}`);
+  if(ca)ca.classList.add('act-a'); if(cb)cb.classList.add('act-b');
+
+  const card=document.getElementById('result-card'),dm=document.getElementById('dare-main'),badge=document.getElementById('cat-badge');
+  dm.classList.remove('vis'); badge.classList.remove('vis'); card.className='result-card';
+
+  let rendered, histText, cat;
+
+  if(currentMode==='dare'){
+    const dare=darePool[Math.floor(Math.random()*darePool.length)];
+    cat=dare.cat;
+    // 【А】→nameA, 【Б】→nameB — square brackets prevent false matches with regular letters
+    rendered=dare.t
+      .replace(/【А】/g,`<span class="na">${nA}</span>`)
+      .replace(/【Б】/g,`<span class="nb">${nB}</span>`);
+    histText=dare.t.replace(/【А】/g,nA).replace(/【Б】/g,nB);
+
+    setTimeout(()=>{
+      card.classList.add(`cat-${cat}`);
+      badge.className=`cat-badge ${cat} vis`;
+      badge.textContent=cat==='soft'?'🟢 Мягко':cat==='mid'?'🟡 Средне':'🔴 Жарко';
+      dm.innerHTML=rendered; dm.classList.add('vis');
+      startTimer();
+    },180);
+  } else {
+    cat='kiss';
+    const partArr=[...activeParts];
+    const part=allParts[partArr[Math.floor(Math.random()*partArr.length)]];
+    rendered=`<span class="na">${nA}</span> целует <span class="nb">${nB}</span> <span class="part">${part}</span> 💋`;
+    histText=`${nA} целует ${nB} ${part}`;
+    setTimeout(()=>{
+      card.classList.add('cat-mid');
+      dm.innerHTML=rendered; dm.classList.add('vis');
+    },180);
+  }
+
+  addHistory(round,histText,cat);
+  launchConfetti();
+}
+
+function skipRound(){
+  skips++; document.getElementById('skip-num').textContent=skips;
+  stopTimer(); spin();
+}
+
+// ═══════════════════════ HISTORY ═══════════════════════
+function addHistory(r,text,cat){
+  history.unshift({r,text,cat});
+  document.getElementById('hist-meta').textContent=`${history.length} раундов`;
+  const list=document.getElementById('hist-list');
+  if(history.length===1) list.innerHTML='';
+  const item=document.createElement('div'); item.className='hi';
+  const cl=cat==='soft'?'мягко':cat==='mid'?'средне':cat==='hot'?'жарко':'поцелуй';
+  item.innerHTML=`<span class="hi-r">#${r}</span><span class="hi-t">${text}</span><span class="hi-c ${cat}">${cl}</span>`;
+  list.insertBefore(item,list.firstChild);
+}
+function clearHistory(){
+  history=[];
+  document.getElementById('hist-meta').textContent='0 раундов';
+  document.getElementById('hist-list').innerHTML='<div style="color:var(--muted);font-size:.82rem;font-weight:700;text-align:center;padding:6px 0">Пока пусто 👀</div>';
+}
+
+// ═══════════════════════ NAV ═══════════════════════
+function openSettings(){
+  document.getElementById('screen-settings').classList.remove('hidden');
+}
+function closeSettings(){
+  document.getElementById('screen-settings').classList.add('hidden');
+}
+
+// ═══════════════════════ UI HELPERS ═══════════════════════
+function toggleAcc(bodyId,chevId){
+  const b=document.getElementById(bodyId),c=document.getElementById(chevId);
+  b.classList.toggle('open'); c.classList.toggle('open',b.classList.contains('open'));
+}
+function showWarn(msg){document.getElementById('warn').textContent=msg;}
+
+const CC=['#ff4da6','#a259ff','#ffde59','#4dffb4','#ff8c42'];
+function launchConfetti(){
+  for(let i=0;i<26;i++) setTimeout(()=>{
+    const el=document.createElement('div'); el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${CC[Math.floor(Math.random()*CC.length)]};width:${8+Math.random()*8}px;height:${8+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),4000);
+  },i*44);
+}
+
+// ═══════════════════════ INIT ═══════════════════════
+renderPlayers(); renderParts(); renderDareList(); updateCatCounts(); updateDareMeta();
+setMode('kiss');
+</script>
+</body>
+</html>
