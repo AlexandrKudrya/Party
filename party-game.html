@@ -421,11 +421,7 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 
 <script>
 // ═══════════════════════ PLAYERS ═══════════════════════
-let players = [
-  {name:'Дуня',gender:'f'},{name:'Амир',gender:'m'},
-  {name:'Настя',gender:'f'},{name:'Маша',gender:'f'},
-  {name:'Семён',gender:'m'},{name:'Александр',gender:'m'},
-];
+let players = [];
 let newGender = 'm';
 let rrQueue = [];
 
@@ -941,6 +937,7 @@ function resetCard(txt){
 let round=0,skips=0,history=[];
 
 function spin(){
+  if(players.length<2){showWarn('Добавь минимум 2 игрока в настройках!');return;}
   const pair=getPair();
   if(!pair){showWarn('Нет допустимых пар с текущими настройками!');return;}
   showWarn('');
