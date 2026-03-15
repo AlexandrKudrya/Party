@@ -207,6 +207,18 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 .acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
 .acc-body.open{max-height:2000px;}
 .acc-inner{padding:0 16px 14px;display:flex;flex-direction:column;gap:9px;}
+
+/* ── COMPETITIVE & MIX ── */
+.vote-btn{border-radius:50px;padding:11px 22px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:900;cursor:pointer;transition:all .2s;border:1.5px solid;}
+.vote-ok{background:rgba(61,220,132,.12);border-color:var(--soft);color:var(--soft);}
+.vote-ok:active{background:rgba(61,220,132,.28);}
+.vote-fail{background:rgba(255,51,85,.08);border-color:var(--hot);color:var(--hot);}
+.vote-fail:active{background:rgba(255,51,85,.2);}
+.score-bdg{font-size:.68rem;font-weight:900;color:var(--a3);background:rgba(255,222,89,.12);border:1px solid rgba(255,222,89,.3);border-radius:50px;padding:1px 6px;margin-left:4px;}
+.pchip.elim{opacity:.3;filter:grayscale(1);}
+.elim-x{font-size:.78rem;margin-left:5px;cursor:pointer;opacity:.32;transition:opacity .18s;line-height:1;}
+.elim-x:active,.elim-x:hover{opacity:1;}
+.prize-card{background:var(--card);border:1.5px solid rgba(255,222,89,.3);border-radius:20px;padding:22px 24px;font-size:1.05rem;font-weight:700;line-height:1.65;color:var(--text);max-width:320px;width:100%;text-align:center;}
 </style>
 </head>
 <body>
@@ -233,6 +245,7 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
   <!-- Mode tabs -->
   <div class="mode-tabs">
     <button class="mode-tab active" id="tab-kiss" onclick="setMode('kiss')">💋 Поцелуи</button>
+    <button class="mode-tab" id="tab-mix" onclick="setMode('mix')">✨ Микс</button>
     <button class="mode-tab" id="tab-dare" onclick="setMode('dare')">🔥 Задания</button>
   </div>
 
@@ -250,6 +263,15 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
       <div class="tnum" id="tnum">30</div>
     </div>
     <div class="dare-main" id="dare-main"><span class="placeholder-txt">Нажми кнопку и начнём! 🎲</span></div>
+  </div>
+
+  <!-- Vote panel (competitive mode) -->
+  <div id="vote-panel" style="display:none;text-align:center;margin-bottom:10px">
+    <div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:7px">Задание выполнено?</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="vote-btn vote-ok" onclick="castVote(true)">✅ Выполнено</button>
+      <button class="vote-btn vote-fail" onclick="castVote(false)">❌ Провал</button>
+    </div>
   </div>
 
   <!-- Warn -->
@@ -272,6 +294,21 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
     <div class="add-row">
       <input class="ai" id="new-part-inp" placeholder="Своё место..." maxlength="40" onkeydown="if(event.key==='Enter')addPart()">
       <button class="addbtn" onclick="addPart()">+ Добавить</button>
+    </div>
+  </div>
+
+  <!-- ── MIX PANEL ── -->
+  <div id="panel-mix" style="display:none;margin-top:18px">
+    <div class="sec-label">Поцелуй каждые</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="mix-freq-opts">
+      <button class="topt" onclick="setMixFreq(this,3)">3 задания</button>
+      <button class="topt active" onclick="setMixFreq(this,4)">4 задания</button>
+      <button class="topt" onclick="setMixFreq(this,5)">5 заданий</button>
+      <button class="topt" onclick="setMixFreq(this,10)">10 заданий</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);font-weight:600;line-height:1.6;text-align:center;padding:0 8px">
+      💋 Части тела — настрой во вкладке <b style="color:var(--a1)">Поцелуи</b><br>
+      🔥 Категории заданий — во вкладке <b style="color:var(--hot)">Задания</b>
     </div>
   </div>
 
@@ -362,6 +399,23 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
         <div class="srow-lbl">🔄 Все со всеми <span class="srow-sub">Очередь по кругу, никто дважды подряд</span></div>
         <label class="sw"><input type="checkbox" id="round-robin"><span class="sw-sl"></span></label>
       </div>
+      <div class="srow">
+        <div class="srow-lbl">🏆 Соревновательный режим <span class="srow-sub">Очки, голосование и выбывание игроков</span></div>
+        <label class="sw"><input type="checkbox" id="use-competitive" onchange="toggleCompetitive()"><span class="sw-sl"></span></label>
+      </div>
+      <div id="competitive-opts" style="display:none">
+        <div class="srow" style="border-top:1px solid rgba(162,89,255,.08)">
+          <div class="srow-lbl">🎁 Призы за очки <span class="srow-sub">Всплывают при достижении порога</span></div>
+          <label class="sw"><input type="checkbox" id="use-prizes" onchange="togglePrizes()"><span class="sw-sl"></span></label>
+        </div>
+        <div id="prize-cats-row" style="display:none">
+          <div class="timer-opts-row">
+            <button class="topt active" id="pcat-soft" onclick="togglePrizeCat(this,'soft')">🟢 Мягко</button>
+            <button class="topt active" id="pcat-mid" onclick="togglePrizeCat(this,'mid')">🟡 Средне</button>
+            <button class="topt active" id="pcat-hot" onclick="togglePrizeCat(this,'hot')">🔴 Жарко</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -397,6 +451,17 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
     </div>
   </div>
 
+  <!-- LEADERBOARD -->
+  <div class="sett-section" id="leaderboard-section" style="display:none">
+    <div class="sett-section-title">🏆 Таблица лидеров</div>
+    <div class="scard">
+      <div id="leaderboard-list" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;min-height:40px"></div>
+      <div style="padding:0 16px 12px">
+        <button class="sel-btn" onclick="resetScores()">🔄 Сбросить счёт и выбывание</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HISTORY -->
   <div class="sett-section">
     <div class="sett-section-title">📜 История раундов</div>
@@ -419,6 +484,15 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 </div><!-- /sett-scroll -->
 </div><!-- /screen-settings -->
 
+<!-- Prize overlay -->
+<div id="prize-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(13,10,26,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;">
+  <div style="font-size:3rem">🏆</div>
+  <div id="prize-player-name" style="font-family:'Dela Gothic One',cursive;font-size:1.5rem;background:linear-gradient(135deg,var(--a3),var(--a1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></div>
+  <div style="font-size:.76rem;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase">Получает приз!</div>
+  <div id="prize-text-card" class="prize-card"></div>
+  <button class="btn-main" onclick="closePrize()">Отлично! 🎉</button>
+</div>
+
 <script>
 // ═══════════════════════ PLAYERS ═══════════════════════
 let players = [];
@@ -431,8 +505,11 @@ function renderPlayers() {
   ms.innerHTML = '';
   players.forEach((p,i) => {
     const c = document.createElement('div');
-    c.className = `pchip ${p.gender}`; c.id = `pchip-${i}`;
-    c.innerHTML = `<span class="gdot"></span>${p.name}`;
+    const isElim=eliminated.has(i);
+    c.className = `pchip ${p.gender}${isElim?' elim':''}`; c.id = `pchip-${i}`;
+    const scorePart=competitive?`<span class="score-bdg">${scores[p.name]||0}</span>`:'';
+    const elimPart=competitive?`<span class="elim-x" onclick="event.stopPropagation();eliminatePlayer(${i})">${isElim?'♻️':'💀'}</span>`:'';
+    c.innerHTML = `<span class="gdot"></span>${p.name}${scorePart}${elimPart}`;
     ms.appendChild(c);
   });
   // Settings screen chips
@@ -441,12 +518,15 @@ function renderPlayers() {
   players.forEach((p,i) => {
     const c = document.createElement('div');
     c.className = `pchip ${p.gender}`;
-    c.innerHTML = `<span class="gdot"></span>${p.name}<span class="prm" style="margin-left:4px;cursor:pointer;opacity:.4;font-size:.72rem" onclick="removePlayer(${i})">✕</span>`;
+    const scorePart=competitive?`<span class="score-bdg">${scores[p.name]||0}</span>`:'';
+    c.innerHTML = `<span class="gdot"></span>${p.name}${scorePart}<span class="prm" style="margin-left:4px;cursor:pointer;opacity:.4;font-size:.72rem" onclick="removePlayer(${i})">✕</span>`;
     sw.appendChild(c);
   });
 }
 function removePlayer(i) {
   if(players.length<=2){showWarn('Нужно минимум 2 игрока!');return;}
+  const newElim=new Set(); eliminated.forEach(idx=>{if(idx<i)newElim.add(idx);else if(idx>i)newElim.add(idx-1);});
+  eliminated=newElim;
   players.splice(i,1); rrQueue=[]; renderPlayers();
 }
 function setGender(g) {
@@ -457,6 +537,7 @@ function setGender(g) {
 function addPlayer() {
   const inp=document.getElementById('new-player-name');
   const name=inp.value.trim(); if(!name) return;
+  scores[name]=scores[name]??0;
   players.push({name,gender:newGender}); inp.value=''; rrQueue=[]; renderPlayers();
 }
 
@@ -877,7 +958,7 @@ function toggleTimerOpts(){
 }
 function setTimer(btn,s){
   timerSecs=s;
-  document.querySelectorAll('.topt').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#timer-opts .topt').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
 function startTimer(){
@@ -899,19 +980,28 @@ function stopTimer(){clearInterval(timerInterval);document.getElementById('timer
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function getPair(){
+  const alive=players.map((_,i)=>i).filter(i=>!eliminated.has(i));
+  if(alive.length<2) return null;
   const rrOn=document.getElementById('round-robin').checked;
   if(rrOn){
-    if(rrQueue.length<2) rrQueue=shuffle(players.map((_,i)=>i));
+    rrQueue=rrQueue.filter(i=>!eliminated.has(i));
+    if(rrQueue.length<2) rrQueue=shuffle([...alive]);
     const i1=rrQueue.shift();
-    let pool=players.map((_,i)=>i).filter(i=>i!==i1&&pairAllowed(i1,i));
-    if(!pool.length) pool=players.map((_,i)=>i).filter(i=>i!==i1);
+    let pool=alive.filter(i=>i!==i1&&pairAllowed(i1,i));
+    if(!pool.length) pool=alive.filter(i=>i!==i1);
+    if(!pool.length) return null;
     return [i1, pool[Math.floor(Math.random()*pool.length)]];
   }
   for(let t=0;t<400;t++){
-    const i1=Math.floor(Math.random()*players.length);
-    let i2; do{i2=Math.floor(Math.random()*players.length);}while(i2===i1);
+    const i1=alive[Math.floor(Math.random()*alive.length)];
+    const pool=alive.filter(i=>i!==i1);
+    if(!pool.length) break;
+    const i2=pool[Math.floor(Math.random()*pool.length)];
     if(pairAllowed(i1,i2)) return [i1,i2];
   }
+  // fallback ignoring pair type
+  const pool=alive.filter(i=>i!==alive[0]);
+  if(pool.length) return [alive[0],pool[0]];
   return null;
 }
 
@@ -919,28 +1009,68 @@ function getPair(){
 let currentMode='kiss';
 function setMode(mode){
   currentMode=mode;
-  document.getElementById('tab-kiss').classList.toggle('active',mode==='kiss');
-  document.getElementById('tab-dare').classList.toggle('active',mode==='dare');
-  document.getElementById('panel-kiss').style.display=mode==='kiss'?'block':'none';
-  document.getElementById('panel-dare').style.display=mode==='dare'?'block':'none';
-  resetCard(mode==='kiss'?'Выбери кто кого целует 💋':'Выбери категории и крути! 🔥');
+  if(mode!=='mix') mixCount=0;
+  ['kiss','mix','dare'].forEach(m=>{
+    document.getElementById(`tab-${m}`).classList.toggle('active',mode===m);
+    document.getElementById(`panel-${m}`).style.display=mode===m?'block':'none';
+  });
+  resetCard(mode==='kiss'?'Выбери кто кого целует 💋':
+            mode==='mix' ?'Крути — поцелуй или задание! ✨':
+                          'Выбери категории и крути! 🔥');
 }
 function resetCard(txt){
   const card=document.getElementById('result-card'),dm=document.getElementById('dare-main'),cb=document.getElementById('cat-badge');
   card.className='result-card'; dm.classList.remove('vis'); cb.classList.remove('vis');
   dm.innerHTML=`<span class="placeholder-txt">${txt}</span>`;
   stopTimer(); document.getElementById('btn-skip').style.display='none';
-  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}`;});
+  document.getElementById('vote-panel').style.display='none';
+  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}${eliminated.has(i)?' elim':''}`;});
 }
 
 // ═══════════════════════ SPIN ═══════════════════════
 let round=0,skips=0,history=[];
+let competitive=false, scores={}, eliminated=new Set(), pendingVoteA=-1, pendingVoteB=-1;
+let prizesEnabled=false, activePrizeCats=new Set(['soft','mid','hot']), prizeQueue=[];
+let mixFreq=4, mixCount=0;
+
+const PRIZES={
+  soft:[
+    {pts:3, text:'【А】 загадывает желание 🌟 — все остальные обязаны выполнить'},
+    {pts:7, text:'【А】 выбирает любую песню, и все слушают её до конца'},
+    {pts:12, text:'【А】 пропускает следующий раунд и просто отдыхает с удовольствием'},
+  ],
+  mid:[
+    {pts:4, text:'【А】 получает массаж плеч от 【Б】 на целую минуту'},
+    {pts:8, text:'【А】 может пересесть на колени к любому человеку за столом'},
+    {pts:14, text:'【А】 и 【Б】 уходят на медленный танец — остальные аплодируют'},
+  ],
+  hot:[
+    {pts:5, text:'【А】 целует 【Б】 туда, куда сам(а) захочет 💋'},
+    {pts:10, text:'【А】 снимает один предмет одежды на выбор'},
+    {pts:15, text:'【А】 и 【Б】 уходят наедине на 5 минут — без вопросов'},
+    {pts:20, text:'【А】 называет своё самое смелое желание вслух — и 【Б】 выполняет'},
+  ],
+};
 
 function spin(){
   if(players.length<2){showWarn('Добавь минимум 2 игрока в настройках!');return;}
+  const alive=players.map((_,i)=>i).filter(i=>!eliminated.has(i));
+  if(alive.length<2){showWarn('Нужно минимум 2 активных игрока!');return;}
   const pair=getPair();
   if(!pair){showWarn('Нет допустимых пар с текущими настройками!');return;}
   showWarn('');
+
+  if(currentMode==='mix'){
+    mixCount++;
+    if(mixCount>=mixFreq){
+      mixCount=0;
+      if(activeParts.size===0){showWarn('Выбери хотя бы одну часть тела во вкладке Поцелуи!');return;}
+      execMixKiss(pair); return;
+    }
+    const pool=[]; activeCats.forEach(cat=>{DARES[cat].forEach(t=>pool.push({t,cat}));customDares[cat].forEach(t=>pool.push({t,cat}));});
+    if(!pool.length){showWarn('Нет активных заданий!');return;}
+    execSpin(pair,pool); return;
+  }
 
   if(currentMode==='dare'){
     const pool=[]; activeCats.forEach(cat=>{DARES[cat].forEach(t=>pool.push({t,cat}));customDares[cat].forEach(t=>pool.push({t,cat}));});
@@ -955,16 +1085,18 @@ function spin(){
 function execSpin(pair, darePool){
   round++; document.getElementById('round-num').textContent=round;
   document.getElementById('btn-skip').style.display='inline-block';
+  document.getElementById('vote-panel').style.display='none';
 
   const btn=document.getElementById('btn-spin');
   btn.classList.add('spin-anim'); btn.disabled=true;
   setTimeout(()=>{btn.classList.remove('spin-anim');btn.disabled=false;},440);
 
   const [i1,i2]=pair;
+  pendingVoteA=i1; pendingVoteB=i2;
   const nA=players[i1].name, nB=players[i2].name;
 
   // highlight chips
-  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}`;});
+  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}${eliminated.has(i)?' elim':''}`;});
   const ca=document.getElementById(`pchip-${i1}`),cb=document.getElementById(`pchip-${i2}`);
   if(ca)ca.classList.add('act-a'); if(cb)cb.classList.add('act-b');
 
@@ -1003,10 +1135,12 @@ function execSpin(pair, darePool){
 
   addHistory(round,histText,cat);
   launchConfetti();
+  if(competitive) setTimeout(()=>{document.getElementById('vote-panel').style.display='block';},600);
 }
 
 function skipRound(){
   skips++; document.getElementById('skip-num').textContent=skips;
+  document.getElementById('vote-panel').style.display='none';
   stopTimer(); spin();
 }
 
@@ -1049,6 +1183,127 @@ function launchConfetti(){
     el.style.cssText=`left:${Math.random()*100}vw;background:${CC[Math.floor(Math.random()*CC.length)]};width:${8+Math.random()*8}px;height:${8+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s`;
     document.body.appendChild(el); setTimeout(()=>el.remove(),4000);
   },i*44);
+}
+
+// ═══════════════════════ COMPETITIVE ═══════════════════════
+function toggleCompetitive(){
+  competitive=document.getElementById('use-competitive').checked;
+  document.getElementById('competitive-opts').style.display=competitive?'':'none';
+  document.getElementById('leaderboard-section').style.display=competitive?'':'none';
+  if(!competitive){
+    document.getElementById('vote-panel').style.display='none';
+    prizesEnabled=false;
+    document.getElementById('use-prizes').checked=false;
+    document.getElementById('prize-cats-row').style.display='none';
+  }
+  renderPlayers(); renderLeaderboard();
+}
+function eliminatePlayer(i){
+  eliminated.has(i)?eliminated.delete(i):eliminated.add(i);
+  renderPlayers();
+}
+function castVote(ok){
+  document.getElementById('vote-panel').style.display='none';
+  if(ok){
+    const nA=players[pendingVoteA]?.name, nB=players[pendingVoteB]?.name;
+    if(nA!=null){scores[nA]=(scores[nA]||0)+1; const p=findPrize(nA);if(p)prizeQueue.push({name:nA,prize:p});}
+    if(nB!=null){scores[nB]=(scores[nB]||0)+1; const p=findPrize(nB);if(p)prizeQueue.push({name:nB,prize:p});}
+    renderPlayers(); renderLeaderboard();
+    if(prizeQueue.length) setTimeout(showNextPrize,300);
+  }
+}
+function renderLeaderboard(){
+  const el=document.getElementById('leaderboard-list'); if(!el)return;
+  if(!competitive||!players.length){el.innerHTML='';return;}
+  const sorted=[...players.map((p,i)=>({name:p.name,score:scores[p.name]||0,elim:eliminated.has(i)}))].sort((a,b)=>b.score-a.score);
+  el.innerHTML=sorted.map((p,idx)=>`<div style="display:flex;justify-content:space-between;align-items:center;font-size:.88rem;font-weight:700;${p.elim?'opacity:.38':''}"><span>${['🥇','🥈','🥉'][idx]||'▸'} ${p.name}${p.elim?` <span style="font-size:.6rem;color:var(--muted)">(выбыл)</span>`:''}</span><span style="color:var(--a3)">${p.score} очк.</span></div>`).join('');
+}
+function resetScores(){
+  players.forEach(p=>{scores[p.name]=0;});
+  eliminated.clear(); prizeQueue=[];
+  renderPlayers(); renderLeaderboard();
+}
+function togglePrizes(){
+  prizesEnabled=document.getElementById('use-prizes').checked;
+  document.getElementById('prize-cats-row').style.display=prizesEnabled?'block':'none';
+}
+function togglePrizeCat(btn,cat){
+  if(activePrizeCats.has(cat)){if(activePrizeCats.size===1)return;activePrizeCats.delete(cat);btn.classList.remove('active');}
+  else{activePrizeCats.add(cat);btn.classList.add('active');}
+}
+function findPrize(name){
+  if(!prizesEnabled||!competitive)return null;
+  const sc=scores[name];
+  for(const cat of ['soft','mid','hot']){
+    if(!activePrizeCats.has(cat))continue;
+    const p=PRIZES[cat].find(x=>x.pts===sc);
+    if(p) return p;
+  }
+  return null;
+}
+function showNextPrize(){
+  if(!prizeQueue.length)return;
+  const {name,prize}=prizeQueue.shift();
+  showPrizePopup(name,prize);
+}
+function showPrizePopup(name,prize){
+  const overlay=document.getElementById('prize-overlay');
+  document.getElementById('prize-player-name').textContent=name;
+  const aName=players[pendingVoteA]?.name||'?', bName=players[pendingVoteB]?.name||'?';
+  const partnerName=name===aName?bName:aName;
+  document.getElementById('prize-text-card').innerHTML=prize.text
+    .replace(/【А】/g,`<span class="na">${name}</span>`)
+    .replace(/【Б】/g,`<span class="nb">${partnerName}</span>`);
+  overlay.style.display='flex';
+  launchConfetti();
+}
+function closePrize(){
+  document.getElementById('prize-overlay').style.display='none';
+  if(prizeQueue.length) setTimeout(showNextPrize,300);
+}
+
+// ═══════════════════════ MIX MODE ═══════════════════════
+function setMixFreq(btn,n){
+  mixFreq=n; mixCount=0;
+  document.querySelectorAll('#mix-freq-opts .topt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function execMixKiss(pair){
+  round++; document.getElementById('round-num').textContent=round;
+  document.getElementById('btn-skip').style.display='inline-block';
+  document.getElementById('vote-panel').style.display='none';
+  const btn=document.getElementById('btn-spin');
+  btn.classList.add('spin-anim'); btn.disabled=true;
+  setTimeout(()=>{btn.classList.remove('spin-anim');btn.disabled=false;},440);
+  const [i1,i2]=pair;
+  pendingVoteA=i1; pendingVoteB=i2;
+  const nA=players[i1].name, nB=players[i2].name;
+  players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}${eliminated.has(i)?' elim':''}`;});
+  const ca=document.getElementById(`pchip-${i1}`),cb=document.getElementById(`pchip-${i2}`);
+  if(ca)ca.classList.add('act-a'); if(cb)cb.classList.add('act-b');
+  const card=document.getElementById('result-card'),dm=document.getElementById('dare-main'),badge=document.getElementById('cat-badge');
+  dm.classList.remove('vis'); badge.classList.remove('vis'); card.className='result-card';
+  const partArr=[...activeParts];
+  const part=allParts[partArr[Math.floor(Math.random()*partArr.length)]];
+  const rendered=`<span class="na">${nA}</span> целует <span class="nb">${nB}</span> <span class="part">${part}</span> 💋`;
+  const histText=`${nA} целует ${nB} ${part}`;
+  setTimeout(()=>{
+    card.classList.add('cat-mid');
+    badge.className='cat-badge mid vis'; badge.textContent='💋 Сюрприз!';
+    dm.innerHTML=rendered; dm.classList.add('vis');
+  },180);
+  addHistory(round,histText,'kiss');
+  launchKissConfetti();
+  if(competitive) setTimeout(()=>{document.getElementById('vote-panel').style.display='block';},600);
+}
+function launchKissConfetti(){
+  const cols=['#ff4da6','#ff8fd4','#ff2288','#ffb3d9','#e91e8c'];
+  for(let i=0;i<38;i++) setTimeout(()=>{
+    const el=document.createElement('div'); el.className='cp';
+    const col=cols[Math.floor(Math.random()*cols.length)];
+    el.style.cssText=`left:${Math.random()*100}vw;background:${col};width:${10+Math.random()*12}px;height:${10+Math.random()*12}px;border-radius:50%;animation-duration:${1.2+Math.random()*1.8}s`;
+    document.body.appendChild(el); setTimeout(()=>el.remove(),4000);
+  },i*35);
 }
 
 // ═══════════════════════ INIT ═══════════════════════
