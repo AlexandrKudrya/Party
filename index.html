@@ -265,6 +265,11 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
     <div class="dare-main" id="dare-main"><span class="placeholder-txt">Нажми кнопку и начнём! 🎲</span></div>
   </div>
 
+  <!-- Swipe hints (shown when swipe mode active) -->
+  <div id="swipe-hints" style="display:none;text-align:center;font-size:.68rem;color:var(--muted);font-weight:700;margin-top:6px;margin-bottom:4px;letter-spacing:.3px;line-height:1.8">
+    ← Провал &nbsp;·&nbsp; Сделано → &nbsp;·&nbsp; ↓ Рерол &nbsp;·&nbsp; ↑ Новое
+  </div>
+
   <!-- Vote panel (competitive mode) -->
   <div id="vote-panel" style="display:none;text-align:center;margin-bottom:10px">
     <div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:7px">Задание выполнено?</div>
@@ -400,6 +405,10 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
         <label class="sw"><input type="checkbox" id="round-robin"><span class="sw-sl"></span></label>
       </div>
       <div class="srow">
+        <div class="srow-lbl">👆 Свайп-управление <span class="srow-sub">Карточку: ← провал · сделано → · ↓ рерол · ↑ новое</span></div>
+        <label class="sw"><input type="checkbox" id="use-swipe" onchange="toggleSwipe()"><span class="sw-sl"></span></label>
+      </div>
+      <div class="srow">
         <div class="srow-lbl">🏆 Соревновательный режим <span class="srow-sub">Очки, голосование и выбывание игроков</span></div>
         <label class="sw"><input type="checkbox" id="use-competitive" onchange="toggleCompetitive()"><span class="sw-sl"></span></label>
       </div>
@@ -414,6 +423,18 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
             <button class="topt active" id="pcat-mid" onclick="togglePrizeCat(this,'mid')">🟡 Средне</button>
             <button class="topt active" id="pcat-hot" onclick="togglePrizeCat(this,'hot')">🔴 Жарко</button>
           </div>
+        </div>
+        <div class="srow" style="border-top:1px solid rgba(162,89,255,.08)">
+          <div class="srow-lbl">✏️ Редактор наград <span class="srow-sub">Свои призы за N очков</span></div>
+        </div>
+        <div style="padding:0 16px 12px">
+          <div class="dare-list-wrap" id="prize-list"></div>
+          <div class="add-row" style="flex-wrap:wrap;margin-top:8px">
+            <input type="number" class="ai" id="new-prize-pts" placeholder="Очки" min="1" max="999" style="width:72px;flex:none">
+            <input class="ai" id="new-prize-text" placeholder="Текст приза... (【А】и【Б】= имена)" maxlength="160" onkeydown="if(event.key==='Enter')addCustomPrize()" style="flex:1;min-width:120px">
+            <button class="addbtn" onclick="addCustomPrize()">+</button>
+          </div>
+          <div style="font-size:.7rem;color:var(--muted);line-height:1.5;margin-top:6px">💡 Приз всплывёт, когда игрок наберёт ровно N очков.</div>
         </div>
       </div>
     </div>
@@ -485,7 +506,7 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 </div><!-- /screen-settings -->
 
 <!-- Prize overlay -->
-<div id="prize-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(13,10,26,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;">
+<div id="prize-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:100;background:rgba(13,10,26,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;overflow:hidden;">
   <div style="font-size:3rem">🏆</div>
   <div id="prize-player-name" style="font-family:'Dela Gothic One',cursive;font-size:1.5rem;background:linear-gradient(135deg,var(--a3),var(--a1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></div>
   <div style="font-size:.76rem;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase">Получает приз!</div>
@@ -1092,6 +1113,7 @@ function execSpin(pair, darePool){
   setTimeout(()=>{btn.classList.remove('spin-anim');btn.disabled=false;},440);
 
   const [i1,i2]=pair;
+  lastPair=pair; lastWasKiss=!darePool;
   pendingVoteA=i1; pendingVoteB=i2;
   const nA=players[i1].name, nB=players[i2].name;
 
@@ -1135,7 +1157,7 @@ function execSpin(pair, darePool){
 
   addHistory(round,histText,cat);
   launchConfetti();
-  if(competitive) setTimeout(()=>{document.getElementById('vote-panel').style.display='block';},600);
+  if(competitive&&!swipeEnabled) setTimeout(()=>{document.getElementById('vote-panel').style.display='block';},600);
 }
 
 function skipRound(){
@@ -1226,6 +1248,7 @@ function resetScores(){
 function togglePrizes(){
   prizesEnabled=document.getElementById('use-prizes').checked;
   document.getElementById('prize-cats-row').style.display=prizesEnabled?'block':'none';
+  renderPrizeList();
 }
 function togglePrizeCat(btn,cat){
   if(activePrizeCats.has(cat)){if(activePrizeCats.size===1)return;activePrizeCats.delete(cat);btn.classList.remove('active');}
@@ -1239,7 +1262,7 @@ function findPrize(name){
     const p=PRIZES[cat].find(x=>x.pts===sc);
     if(p) return p;
   }
-  return null;
+  return customPrizes.find(x=>x.pts===sc)||null;
 }
 function showNextPrize(){
   if(!prizeQueue.length)return;
@@ -1269,6 +1292,7 @@ function setMixFreq(btn,n){
   btn.classList.add('active');
 }
 function execMixKiss(pair){
+  lastPair=pair; lastWasKiss=true;
   round++; document.getElementById('round-num').textContent=round;
   document.getElementById('btn-skip').style.display='inline-block';
   document.getElementById('vote-panel').style.display='none';
@@ -1305,8 +1329,109 @@ function launchKissConfetti(){
   },i*35);
 }
 
+// ═══════════════════════ SWIPE ═══════════════════════
+let swipeEnabled=false;
+let lastPair=null, lastWasKiss=false;
+let _tx=0,_ty=0,_tactive=false;
+const SWIPE_T=50;
+
+function toggleSwipe(){
+  swipeEnabled=document.getElementById('use-swipe').checked;
+  document.getElementById('swipe-hints').style.display=swipeEnabled?'block':'none';
+}
+function initSwipe(){
+  const card=document.getElementById('result-card');
+  card.addEventListener('touchstart',e=>{
+    if(!swipeEnabled)return;
+    _tx=e.touches[0].clientX; _ty=e.touches[0].clientY; _tactive=true;
+  },{passive:true});
+  card.addEventListener('touchmove',e=>{
+    if(!swipeEnabled||!_tactive)return;
+    const dx=e.touches[0].clientX-_tx, dy=e.touches[0].clientY-_ty;
+    card.style.transition='none';
+    if(Math.abs(dx)>=Math.abs(dy)){
+      card.style.transform=`translateX(${dx*0.42}px) rotate(${dx*0.045}deg)`;
+      card.style.opacity=`${Math.max(0.4,1-Math.abs(dx)/380)}`;
+    } else {
+      card.style.transform=`translateY(${dy*0.42}px)`;
+      card.style.opacity=`${Math.max(0.4,1-Math.abs(dy)/380)}`;
+    }
+  },{passive:true});
+  card.addEventListener('touchcancel',()=>{_tactive=false;_resetCardStyle();});
+  card.addEventListener('touchend',e=>{
+    if(!swipeEnabled||!_tactive)return;
+    _tactive=false;
+    const dx=e.changedTouches[0].clientX-_tx, dy=e.changedTouches[0].clientY-_ty;
+    _resetCardStyle();
+    if(Math.abs(dx)>=Math.abs(dy)&&Math.abs(dx)>SWIPE_T){
+      dx>0?_swipeDone():_swipeFail();
+    } else if(Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>SWIPE_T){
+      dy>0?reroll():spin();
+    }
+  },{passive:true});
+}
+function _resetCardStyle(){
+  const card=document.getElementById('result-card');
+  card.style.transition='transform .22s,opacity .22s';
+  card.style.transform=''; card.style.opacity='';
+}
+function _swipeDone(){
+  if(competitive&&document.getElementById('vote-panel').style.display!=='none') castVote(true);
+  else spin();
+}
+function _swipeFail(){
+  if(competitive&&document.getElementById('vote-panel').style.display!=='none') castVote(false);
+  else spin();
+}
+function reroll(){
+  if(!lastPair){spin();return;}
+  stopTimer();
+  document.getElementById('vote-panel').style.display='none';
+  const pair=lastPair;
+  if(currentMode==='dare'||(!lastWasKiss&&currentMode==='mix')){
+    const pool=[]; activeCats.forEach(cat=>{DARES[cat].forEach(t=>pool.push({t,cat}));customDares[cat].forEach(t=>pool.push({t,cat}));});
+    if(!pool.length){showWarn('Нет активных заданий!');return;}
+    execSpin(pair,pool);
+  } else {
+    if(activeParts.size===0){showWarn('Выбери хотя бы одну часть тела!');return;}
+    execSpin(pair,null);
+  }
+}
+
+// ═══════════════════════ PRIZE EDITOR ═══════════════════════
+let customPrizes=[];
+
+function renderPrizeList(){
+  const list=document.getElementById('prize-list'); if(!list)return;
+  list.innerHTML='';
+  const builtIn=[...PRIZES.soft,...PRIZES.mid,...PRIZES.hot].sort((a,b)=>a.pts-b.pts);
+  builtIn.forEach(p=>{
+    const d=document.createElement('div'); d.className='di';
+    d.innerHTML=`<span class="di-cat mid">${p.pts} очк.</span><span class="di-text">${p.text}</span>`;
+    list.appendChild(d);
+  });
+  customPrizes.forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='di';
+    d.innerHTML=`<span class="di-cat soft">${p.pts} очк.</span><span class="di-text">${p.text}</span><span class="di-rm" onclick="removeCustomPrize(${i})">✕</span>`;
+    list.appendChild(d);
+  });
+  if(!builtIn.length&&!customPrizes.length)
+    list.innerHTML='<div style="color:var(--muted);font-size:.82rem;font-weight:700;padding:4px 0">Нет наград</div>';
+}
+function addCustomPrize(){
+  const pts=parseInt(document.getElementById('new-prize-pts').value);
+  const text=document.getElementById('new-prize-text').value.trim();
+  if(!text||isNaN(pts)||pts<1)return;
+  customPrizes.push({pts,text});
+  document.getElementById('new-prize-pts').value='';
+  document.getElementById('new-prize-text').value='';
+  renderPrizeList();
+}
+function removeCustomPrize(i){customPrizes.splice(i,1);renderPrizeList();}
+
 // ═══════════════════════ INIT ═══════════════════════
-renderPlayers(); renderParts(); renderDareList(); updateCatCounts(); updateDareMeta();
+renderPlayers(); renderParts(); renderDareList(); updateCatCounts(); updateDareMeta(); renderPrizeList();
+initSwipe();
 setMode('kiss');
 </script>
 </body>
