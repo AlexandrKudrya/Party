@@ -1105,7 +1105,7 @@ function execSpin(pair, darePool){
 
   let rendered, histText, cat;
 
-  if(currentMode==='dare'){
+  if(darePool){
     const dare=darePool[Math.floor(Math.random()*darePool.length)];
     cat=dare.cat;
     // 【А】→nameA, 【Б】→nameB — square brackets prevent false matches with regular letters
@@ -1294,7 +1294,6 @@ function execMixKiss(pair){
   },180);
   addHistory(round,histText,'kiss');
   launchKissConfetti();
-  if(competitive) setTimeout(()=>{document.getElementById('vote-panel').style.display='block';},600);
 }
 function launchKissConfetti(){
   const cols=['#ff4da6','#ff8fd4','#ff2288','#ffb3d9','#e91e8c'];
