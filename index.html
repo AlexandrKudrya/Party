@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Вечеринка">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -245,9 +245,30 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 #swipe-ind-r{right:14px;color:var(--green);border-color:var(--green);background:rgba(77,255,180,.08);}
 .swipe-hint-bar{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;font-size:.58rem;font-weight:900;letter-spacing:.6px;text-transform:uppercase;opacity:0;transition:opacity .5s .2s;pointer-events:none;user-select:none;}
 .result-card{touch-action:none;}
+
+/* ── PWA INSTALL BANNER ── */
+#pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#1e1838,#160d2a);border-top:1.5px solid rgba(255,77,166,.35);display:flex;align-items:center;gap:12px;transform:translateY(110%);transition:transform .4s cubic-bezier(.4,0,.2,1);box-shadow:0 -4px 32px rgba(255,77,166,.15);}
+#pwa-banner.visible{transform:translateY(0);}
+#pwa-banner img{width:44px;height:44px;border-radius:10px;flex-shrink:0;}
+#pwa-banner-text{flex:1;min-width:0;}
+#pwa-banner-text b{display:block;font-size:.9rem;color:#f0eaff;}
+#pwa-banner-text span{font-size:.76rem;color:#6d5f90;}
+#pwa-install-btn{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;border:none;border-radius:12px;padding:8px 16px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.8rem;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+#pwa-close-btn{background:none;border:none;color:#6d5f90;font-size:1.3rem;cursor:pointer;padding:4px;flex-shrink:0;line-height:1;}
 </style>
 </head>
 <body>
+
+<!-- PWA install banner -->
+<div id="pwa-banner">
+  <img src="icon.svg" alt="">
+  <div id="pwa-banner-text">
+    <b id="pwa-banner-title">Добавить на экран</b>
+    <span id="pwa-banner-sub">Открывай как приложение</span>
+  </div>
+  <button id="pwa-install-btn">Добавить</button>
+  <button id="pwa-close-btn" aria-label="Закрыть">×</button>
+</div>
 
 <div class="blob b1"></div>
 <div class="blob b2"></div>
@@ -1626,6 +1647,56 @@ initSwipeCard();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/Party/sw.js').catch(() => {});
 }
+
+// ── PWA INSTALL BANNER ──
+(function(){
+  const banner  = document.getElementById('pwa-banner');
+  const installBtn = document.getElementById('pwa-install-btn');
+  const closeBtn   = document.getElementById('pwa-close-btn');
+  const DISMISSED_KEY = 'pwa_banner_dismissed';
+
+  if (sessionStorage.getItem(DISMISSED_KEY)) return;
+  // Don't show if already installed (standalone mode)
+  if (window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true) return;
+
+  function showBanner() {
+    setTimeout(() => banner.classList.add('visible'), 1500);
+  }
+  function hideBanner() {
+    banner.classList.remove('visible');
+    sessionStorage.setItem(DISMISSED_KEY, '1');
+  }
+
+  closeBtn.addEventListener('click', hideBanner);
+
+  // Android Chrome — beforeinstallprompt
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showBanner();
+  });
+
+  installBtn.addEventListener('click', () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; hideBanner(); });
+    } else {
+      hideBanner();
+    }
+  });
+
+  // iOS Safari — manual instructions
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) &&
+                !window.MSStream && !window.navigator.standalone;
+  if (isIOS) {
+    document.getElementById('pwa-banner-title').textContent = 'Добавить на экран «Домой»';
+    document.getElementById('pwa-banner-sub').textContent = 'Нажми Поделиться → «На экран Домой»';
+    installBtn.style.display = 'none';
+    showBanner();
+  }
+})();
 </script>
 </body>
 </html>
