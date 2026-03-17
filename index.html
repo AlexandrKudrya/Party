@@ -15,7 +15,7 @@
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:pan-y;}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;}
 body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);display:flex;flex-direction:column;}
 
 /* ── BLOBS ── */
@@ -31,8 +31,11 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 #screen-main{z-index:2;}
 
 /* ── MAIN SCREEN ── */
-.main-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px 16px 80px;max-width:640px;width:100%;margin:0 auto;}
-.main-scroll::-webkit-scrollbar{width:0;}
+.main-scroll{flex:1;overflow:hidden;padding:16px 16px 0;max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;}
+.card-area{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;padding:0 0 20px;}
+.ghost-card{position:absolute;left:0;right:0;bottom:20px;top:0;border-radius:24px;background:var(--card2);border:1.5px solid rgba(162,89,255,.09);pointer-events:none;transform-origin:bottom center;}
+.ghost-c1{transform:translateY(10px) scaleX(0.95);opacity:.35;z-index:1;}
+.ghost-c2{transform:translateY(18px) scaleX(0.88);opacity:.17;z-index:0;}
 
 /* top bar */
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-top:calc(var(--safe-top) + 4px);}
@@ -56,7 +59,10 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 .pchip.act-b{border-color:var(--a2);color:var(--a2);background:rgba(162,89,255,.1);box-shadow:0 0 12px rgba(162,89,255,.2);transform:scale(1.06);}
 
 /* result card */
-.result-card{background:var(--card);border:1.5px solid rgba(162,89,255,.18);border-radius:24px;padding:28px 22px;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;transition:border-color .35s;margin-bottom:16px;}
+.result-card{background:var(--card);border:1.5px solid rgba(162,89,255,.18);border-radius:24px;padding:28px 22px;text-align:center;min-height:180px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;transition:border-color .35s;z-index:2;}
+.btn-row{display:none!important;}
+#warn{position:fixed;bottom:calc(var(--safe-bot) + 22px);left:50%;transform:translateX(-50%);z-index:500;background:rgba(13,10,26,.92);border:1px solid var(--hot);border-radius:50px;padding:9px 20px;font-size:.78rem;color:var(--hot);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100vw - 40px);text-align:center;}
+#warn.visible{opacity:1;}
 .result-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,77,166,.04),rgba(162,89,255,.04));pointer-events:none;}
 .result-card.cat-soft{border-color:rgba(61,220,132,.35);} .result-card.cat-mid{border-color:rgba(255,184,48,.35);} .result-card.cat-hot{border-color:rgba(255,51,85,.38);}
 
@@ -219,6 +225,18 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 .elim-x{font-size:.78rem;margin-left:5px;cursor:pointer;opacity:.32;transition:opacity .18s;line-height:1;}
 .elim-x:active,.elim-x:hover{opacity:1;}
 .prize-card{background:var(--card);border:1.5px solid rgba(255,222,89,.3);border-radius:20px;padding:22px 24px;font-size:1.05rem;font-weight:700;line-height:1.65;color:var(--text);max-width:320px;width:100%;text-align:center;}
+
+/* ── INLINE ADD PLAYER ── */
+.pchip-add{display:flex;align-items:center;gap:4px;background:rgba(162,89,255,.08);border:1.5px dashed rgba(162,89,255,.32);border-radius:50px;padding:7px 13px;font-size:.83rem;font-weight:900;color:var(--a2);cursor:pointer;transition:all .22s;white-space:nowrap;flex-shrink:0;user-select:none;}
+.pchip-add.open{background:rgba(255,77,166,.08);border-color:rgba(255,77,166,.4);color:var(--a1);}
+.pchip-add:active{opacity:.65;}
+
+/* ── SWIPE INDICATORS ── */
+.swipe-ind{position:absolute;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:900;letter-spacing:.8px;text-transform:uppercase;border-radius:9px;padding:6px 12px;border:2px solid;opacity:0;pointer-events:none;transition:opacity .08s linear;}
+#swipe-ind-l{left:14px;color:var(--hot);border-color:var(--hot);background:rgba(255,51,85,.08);}
+#swipe-ind-r{right:14px;color:var(--green);border-color:var(--green);background:rgba(77,255,180,.08);}
+.swipe-hint-bar{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;font-size:.58rem;font-weight:900;letter-spacing:.6px;text-transform:uppercase;opacity:0;transition:opacity .5s .2s;pointer-events:none;user-select:none;}
+.result-card{touch-action:none;}
 </style>
 </head>
 <body>
@@ -251,18 +269,40 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 
   <!-- Players -->
   <div class="players-scroll" id="players-scroll"></div>
-
-  <!-- Result card -->
-  <div class="result-card" id="result-card">
-    <div class="cat-badge" id="cat-badge"></div>
-    <div class="timer-wrap" id="timer-wrap">
-      <svg class="tring" width="56" height="56" viewBox="0 0 56 56">
-        <circle class="tbg" cx="28" cy="28" r="24"/>
-        <circle class="tarc" id="tarc" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
-      </svg>
-      <div class="tnum" id="tnum">30</div>
+  <!-- Inline add player panel -->
+  <div id="add-player-panel" style="max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .28s;opacity:0">
+    <div style="display:flex;gap:7px;align-items:center;padding-bottom:14px">
+      <input class="ai" id="new-player-name-main" placeholder="Имя игрока..." maxlength="20" onkeydown="if(event.key==='Enter')addPlayerMain()">
+      <div class="gender-tog">
+        <button id="gtm-main" class="am" onclick="setGenderMain('m')">♂</button>
+        <button id="gtf-main" onclick="setGenderMain('f')">♀</button>
+      </div>
+      <button class="addbtn" onclick="addPlayerMain()">+</button>
     </div>
-    <div class="dare-main" id="dare-main"><span class="placeholder-txt">Нажми кнопку и начнём! 🎲</span></div>
+  </div>
+
+  <!-- Card stack -->
+  <div class="card-area">
+    <div class="ghost-card ghost-c2"></div>
+    <div class="ghost-card ghost-c1"></div>
+    <div class="result-card" id="result-card">
+      <div class="swipe-ind" id="swipe-ind-l">← пропустить</div>
+      <div class="swipe-ind" id="swipe-ind-r">выполнено →</div>
+      <div class="swipe-hint-bar" id="swipe-hint-bar">
+        <span style="color:var(--hot)">← пропустить</span>
+        <span style="color:var(--a2)">↑ далее</span>
+        <span style="color:var(--green)">выполнено →</span>
+      </div>
+      <div class="cat-badge" id="cat-badge"></div>
+      <div class="timer-wrap" id="timer-wrap">
+        <svg class="tring" width="56" height="56" viewBox="0 0 56 56">
+          <circle class="tbg" cx="28" cy="28" r="24"/>
+          <circle class="tarc" id="tarc" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+        </svg>
+        <div class="tnum" id="tnum">30</div>
+      </div>
+      <div class="dare-main" id="dare-main"><span class="placeholder-txt">Потяни вверх чтобы начать ↑</span></div>
+    </div>
   </div>
 
   <!-- Swipe hints (shown when swipe mode active) -->
@@ -284,50 +324,6 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
     <button class="btn-skip" id="btn-skip" style="display:none" onclick="skipRound()">⏭ Пропустить</button>
   </div>
 
-  <!-- ── KISS PANEL ── -->
-  <div id="panel-kiss" style="margin-top:18px">
-    <div class="sec-label">Куда целовать <span id="parts-meta" style="color:var(--a2)"></span></div>
-    <div class="parts-wrap" id="parts-wrap"></div>
-    <div class="sel-row" style="margin-bottom:8px">
-      <button class="sel-btn" onclick="setAllParts(true)">✅ Все</button>
-      <button class="sel-btn" onclick="setAllParts(false)">❌ Снять все</button>
-    </div>
-    <div class="add-row">
-      <input class="ai" id="new-part-inp" placeholder="Своё место..." maxlength="40" onkeydown="if(event.key==='Enter')addPart()">
-      <button class="addbtn" onclick="addPart()">+ Добавить</button>
-    </div>
-  </div>
-
-  <!-- ── MIX PANEL ── -->
-  <div id="panel-mix" style="display:none;margin-top:18px">
-    <div class="sec-label">Поцелуй каждые</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="mix-freq-opts">
-      <button class="topt" onclick="setMixFreq(this,3)">3 задания</button>
-      <button class="topt active" onclick="setMixFreq(this,4)">4 задания</button>
-      <button class="topt" onclick="setMixFreq(this,5)">5 заданий</button>
-      <button class="topt" onclick="setMixFreq(this,10)">10 заданий</button>
-    </div>
-    <div style="font-size:.72rem;color:var(--muted);font-weight:600;line-height:1.6;text-align:center;padding:0 8px">
-      💋 Части тела — настрой во вкладке <b style="color:var(--a1)">Поцелуи</b><br>
-      🔥 Категории заданий — во вкладке <b style="color:var(--hot)">Задания</b>
-    </div>
-  </div>
-
-  <!-- ── DARE PANEL ── -->
-  <div id="panel-dare" style="display:none;margin-top:18px">
-    <div class="sec-label">Категории</div>
-    <div class="cats">
-      <button class="cat-btn soft active" id="cat-soft" onclick="toggleCat('soft')">
-        <span class="cat-icon">🟢</span>Мягко<div class="cat-count" id="cnt-soft"></div>
-      </button>
-      <button class="cat-btn mid active" id="cat-mid" onclick="toggleCat('mid')">
-        <span class="cat-icon">🟡</span>Средне<div class="cat-count" id="cnt-mid"></div>
-      </button>
-      <button class="cat-btn hot active" id="cat-hot" onclick="toggleCat('hot')">
-        <span class="cat-icon">🔴</span>Жарко<div class="cat-count" id="cnt-hot"></div>
-      </button>
-    </div>
-  </div>
 
 </div><!-- /main-scroll -->
 </div><!-- /screen-main -->
@@ -495,11 +491,61 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
     </div>
   </div>
 
+  <!-- KISS / MIX PARTS -->
+  <div class="sett-section">
+    <div class="sett-section-title">💋 Куда целовать</div>
+    <div class="scard">
+      <div style="padding:12px 16px 12px">
+        <div class="sel-row" style="margin-bottom:10px">
+          <button class="sel-btn" onclick="setAllParts(true)">✅ Все</button>
+          <button class="sel-btn" onclick="setAllParts(false)">❌ Снять все</button>
+          <span id="parts-meta" style="color:var(--a2);font-size:.72rem;font-weight:700;margin-left:6px"></span>
+        </div>
+        <div class="parts-wrap" id="parts-wrap"></div>
+        <div class="add-row" style="margin-top:4px">
+          <input class="ai" id="new-part-inp" placeholder="Своё место..." maxlength="40" onkeydown="if(event.key==='Enter')addPart()">
+          <button class="addbtn" onclick="addPart()">+ Добавить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DARE CATEGORIES -->
+  <div class="sett-section">
+    <div class="sett-section-title">🎯 Категории заданий</div>
+    <div class="scard" style="padding:14px 16px">
+      <div class="cats">
+        <button class="cat-btn soft active" id="cat-soft" onclick="toggleCat('soft')">
+          <span class="cat-icon">🟢</span>Мягко<div class="cat-count" id="cnt-soft"></div>
+        </button>
+        <button class="cat-btn mid active" id="cat-mid" onclick="toggleCat('mid')">
+          <span class="cat-icon">🟡</span>Средне<div class="cat-count" id="cnt-mid"></div>
+        </button>
+        <button class="cat-btn hot active" id="cat-hot" onclick="toggleCat('hot')">
+          <span class="cat-icon">🔴</span>Жарко<div class="cat-count" id="cnt-hot"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIX FREQUENCY -->
+  <div class="sett-section" id="sett-mix-section" style="display:none">
+    <div class="sett-section-title">✨ Режим Микс — частота</div>
+    <div class="scard">
+      <div class="timer-opts-row" id="mix-freq-opts">
+        <button class="topt" onclick="setMixFreq(this,3)">3 задания</button>
+        <button class="topt active" onclick="setMixFreq(this,4)">4 задания</button>
+        <button class="topt" onclick="setMixFreq(this,5)">5 заданий</button>
+        <button class="topt" onclick="setMixFreq(this,10)">10 заданий</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /sett-scroll -->
 </div><!-- /screen-settings -->
 
 <!-- Prize overlay -->
-<div id="prize-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:100;background:rgba(13,10,26,.95);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;overflow:hidden;">
+<div id="prize-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(13,10,26,.97);flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;overflow:hidden;">
   <div style="font-size:3rem">🏆</div>
   <div id="prize-player-name" style="font-family:'Dela Gothic One',cursive;font-size:1.5rem;background:linear-gradient(135deg,var(--a3),var(--a1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></div>
   <div style="font-size:.76rem;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase">Получает приз!</div>
@@ -511,6 +557,8 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);disp
 // ═══════════════════════ PLAYERS ═══════════════════════
 let players = [];
 let newGender = 'm';
+let newGenderMain = 'm';
+let addPlayerPanelOpen = false;
 let rrQueue = [];
 
 function renderPlayers() {
@@ -523,9 +571,16 @@ function renderPlayers() {
     c.className = `pchip ${p.gender}${isElim?' elim':''}`; c.id = `pchip-${i}`;
     const scorePart=competitive?`<span class="score-bdg">${scores[p.name]||0}</span>`:'';
     const elimPart=competitive?`<span class="elim-x" onclick="event.stopPropagation();eliminatePlayer(${i})">${isElim?'♻️':'💀'}</span>`:'';
-    c.innerHTML = `<span class="gdot"></span>${p.name}${scorePart}${elimPart}`;
+    const rmPart=addPlayerPanelOpen?`<span class="prm" style="margin-left:4px;cursor:pointer;opacity:.5;font-size:.72rem" onclick="event.stopPropagation();removePlayer(${i})">✕</span>`:'';
+    c.innerHTML = `<span class="gdot"></span>${p.name}${scorePart}${elimPart}${rmPart}`;
     ms.appendChild(c);
   });
+  // + chip
+  const addChip=document.createElement('div');
+  addChip.className='pchip pchip-add'+(addPlayerPanelOpen?' open':'');
+  addChip.textContent=addPlayerPanelOpen?'✕ Закрыть':'+ Игрок';
+  addChip.onclick=toggleAddPlayerPanel;
+  ms.appendChild(addChip);
   // Settings screen chips
   const sw = document.getElementById('sett-players-wrap');
   sw.innerHTML = '';
@@ -538,7 +593,7 @@ function renderPlayers() {
   });
 }
 function removePlayer(i) {
-  if(players.length<=2){showWarn('Нужно минимум 2 игрока!');return;}
+  if(players.length<=1){showWarn('Нужен хотя бы 1 игрок!');return;}
   const newElim=new Set(); eliminated.forEach(idx=>{if(idx<i)newElim.add(idx);else if(idx>i)newElim.add(idx-1);});
   eliminated=newElim;
   players.splice(i,1); rrQueue=[]; renderPlayers();
@@ -553,6 +608,25 @@ function addPlayer() {
   const name=inp.value.trim(); if(!name) return;
   scores[name]=scores[name]??0;
   players.push({name,gender:newGender}); inp.value=''; rrQueue=[]; renderPlayers();
+}
+function toggleAddPlayerPanel() {
+  addPlayerPanelOpen=!addPlayerPanelOpen;
+  const panel=document.getElementById('add-player-panel');
+  panel.style.maxHeight=addPlayerPanelOpen?'70px':'0';
+  panel.style.opacity=addPlayerPanelOpen?'1':'0';
+  if(addPlayerPanelOpen) setTimeout(()=>{const inp=document.getElementById('new-player-name-main');if(inp)inp.focus();},360);
+  renderPlayers();
+}
+function setGenderMain(g) {
+  newGenderMain=g;
+  document.getElementById('gtm-main').className=g==='m'?'am':'';
+  document.getElementById('gtf-main').className=g==='f'?'af':'';
+}
+function addPlayerMain() {
+  const inp=document.getElementById('new-player-name-main');
+  const name=inp.value.trim(); if(!name) return;
+  scores[name]=scores[name]??0;
+  players.push({name,gender:newGenderMain}); inp.value=''; rrQueue=[]; renderPlayers();
 }
 
 // ═══════════════════════ PAIR TYPES ═══════════════════════
@@ -1026,18 +1100,19 @@ function setMode(mode){
   if(mode!=='mix') mixCount=0;
   ['kiss','mix','dare'].forEach(m=>{
     document.getElementById(`tab-${m}`).classList.toggle('active',mode===m);
-    document.getElementById(`panel-${m}`).style.display=mode===m?'block':'none';
   });
-  resetCard(mode==='kiss'?'Выбери кто кого целует 💋':
-            mode==='mix' ?'Крути — поцелуй или задание! ✨':
-                          'Выбери категории и крути! 🔥');
+  const mixSect=document.getElementById('sett-mix-section');
+  if(mixSect) mixSect.style.display=mode==='mix'?'':'none';
+  resetCard('Потяни вверх чтобы начать ↑');
 }
 function resetCard(txt){
   const card=document.getElementById('result-card'),dm=document.getElementById('dare-main'),cb=document.getElementById('cat-badge');
   card.className='result-card'; dm.classList.remove('vis'); cb.classList.remove('vis');
   dm.innerHTML=`<span class="placeholder-txt">${txt}</span>`;
+  requestAnimationFrame(()=>dm.classList.add('vis'));
   stopTimer(); document.getElementById('btn-skip').style.display='none';
   document.getElementById('vote-panel').style.display='none';
+  document.getElementById('swipe-hint-bar').style.opacity='0';
   players.forEach((_,i)=>{const c=document.getElementById(`pchip-${i}`);if(c)c.className=`pchip ${players[i].gender}${eliminated.has(i)?' elim':''}`;});
 }
 
@@ -1221,6 +1296,7 @@ function execSpin(pair, darePool){
       badge.textContent=cat==='soft'?'🟢 Мягко':cat==='mid'?'🟡 Средне':'🔴 Жарко';
       dm.innerHTML=rendered; dm.classList.add('vis');
       startTimer();
+      document.getElementById('swipe-hint-bar').style.opacity='.4';
     },180);
   } else {
     cat='kiss';
@@ -1231,6 +1307,7 @@ function execSpin(pair, darePool){
     setTimeout(()=>{
       card.classList.add('cat-mid');
       dm.innerHTML=rendered; dm.classList.add('vis');
+      document.getElementById('swipe-hint-bar').style.opacity='.4';
     },180);
   }
 
@@ -1275,7 +1352,14 @@ function toggleAcc(bodyId,chevId){
   const b=document.getElementById(bodyId),c=document.getElementById(chevId);
   b.classList.toggle('open'); c.classList.toggle('open',b.classList.contains('open'));
 }
-function showWarn(msg){document.getElementById('warn').textContent=msg;}
+let _warnTimer=null;
+function showWarn(msg){
+  const el=document.getElementById('warn');
+  el.textContent=msg;
+  el.classList.toggle('visible',!!msg);
+  clearTimeout(_warnTimer);
+  if(msg) _warnTimer=setTimeout(()=>{el.textContent='';el.classList.remove('visible');},2500);
+}
 
 const CC=['#ff4da6','#a259ff','#ffde59','#4dffb4','#ff8c42'];
 function launchConfetti(){
@@ -1399,6 +1483,7 @@ function execMixKiss(pair){
     card.classList.add('cat-mid');
     badge.className='cat-badge mid vis'; badge.textContent='💋 Сюрприз!';
     dm.innerHTML=rendered; dm.classList.add('vis');
+    document.getElementById('swipe-hint-bar').style.opacity='.4';
   },180);
   addHistory(round,histText,'kiss');
   launchKissConfetti();
@@ -1441,9 +1526,93 @@ function addCustomPrize(){
 }
 function removeCustomPrize(i){customPrizes.splice(i,1);renderPrizeList();}
 
+// ═══════════════════════ SWIPE ═══════════════════════
+function initSwipeCard() {
+  const card=document.getElementById('result-card');
+  const indL=document.getElementById('swipe-ind-l');
+  const indR=document.getElementById('swipe-ind-r');
+  let startX=0, startY=0, currX=0, currY=0, dragging=false, swipeDir=null;
+  const THRESH_H=80, THRESH_V=45, DIR_LOCK=12;
+
+  function hasContent(){return document.getElementById('dare-main').classList.contains('vis');}
+
+  function clearStyles(){
+    indL.style.opacity='0'; indR.style.opacity='0'; card.style.boxShadow='';
+  }
+
+  function snapBack(){
+    card.style.transition='transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s';
+    card.style.transform=''; clearStyles();
+    setTimeout(()=>{card.style.transition='';},300);
+  }
+
+  function flyOff(tx, ty, rot, cb){
+    card.style.transition='transform .3s ease,opacity .26s';
+    card.style.transform=`translate(${tx}%,${ty}%) rotate(${rot}deg) scale(0.88)`;
+    card.style.opacity='0';
+    clearStyles();
+    setTimeout(()=>{
+      document.getElementById('dare-main').classList.remove('vis');
+      card.style.cssText='';
+      cb();
+    },310);
+  }
+
+  function doRight(){ flyOff(160,0,20,()=>{ if(competitive) castVote(true); spin(); }); }
+  function doLeft(){ flyOff(-160,0,-20,()=>{ if(competitive) castVote(false); else { skips++; document.getElementById('skip-num').textContent=skips; stopTimer(); } spin(); }); }
+  function doUp(){ if(!hasContent()){ card.style.transition='transform .2s cubic-bezier(.4,0,.2,1)'; card.style.transform=''; setTimeout(()=>{card.style.cssText=''; spin();},210); return; } flyOff(0,-130,0,()=>{ spin(); }); }
+
+  card.addEventListener('pointerdown',e=>{
+    startX=e.clientX; startY=e.clientY;
+    currX=0; currY=0; dragging=true; swipeDir=null;
+    card.setPointerCapture(e.pointerId);
+    card.style.transition='none';
+  });
+
+  card.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    currX=e.clientX-startX; currY=e.clientY-startY;
+    if(!swipeDir && (Math.abs(currX)>DIR_LOCK || Math.abs(currY)>DIR_LOCK)){
+      swipeDir = Math.abs(currX)>Math.abs(currY) ? 'h' : 'v';
+    }
+    if(swipeDir==='h' && hasContent()){
+      const rot=currX*0.07;
+      const prog=Math.min(Math.abs(currX)/THRESH_H,1);
+      card.style.transform=`translateX(${currX}px) rotate(${rot}deg)`;
+      if(currX>20){ indL.style.opacity='0'; indR.style.opacity=String(prog); card.style.boxShadow=`0 4px 40px rgba(77,255,180,${prog*.38})`; }
+      else if(currX<-20){ indR.style.opacity='0'; indL.style.opacity=String(prog); card.style.boxShadow=`0 4px 40px rgba(255,51,85,${prog*.38})`; }
+      else { clearStyles(); }
+    } else if(swipeDir==='v' && currY<0){
+      const prog=Math.min(-currY/THRESH_V,1);
+      card.style.transform=`translateY(${currY*0.6}px) scale(${1-prog*0.06})`;
+      card.style.boxShadow=`0 4px 40px rgba(162,89,255,${prog*.4})`;
+    }
+  });
+
+  function onRelease(){
+    if(!dragging) return;
+    dragging=false;
+    if(swipeDir==='h' && hasContent()){
+      if(currX>THRESH_H) doRight();
+      else if(currX<-THRESH_H) doLeft();
+      else snapBack();
+    } else if(swipeDir==='v' && currY<-THRESH_V){
+      doUp();
+    } else {
+      snapBack();
+    }
+  }
+
+  card.addEventListener('pointerup', onRelease);
+  card.addEventListener('pointercancel', ()=>{ dragging=false; snapBack(); });
+  // Prevent iOS Safari from claiming vertical gesture as page scroll
+  card.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});
+}
+
 // ═══════════════════════ INIT ═══════════════════════
 renderPlayers(); renderParts(); renderDareList(); updateCatCounts(); updateDareMeta(); renderPrizeList();
 setMode('kiss');
+initSwipeCard();
 </script>
 </body>
 </html>
